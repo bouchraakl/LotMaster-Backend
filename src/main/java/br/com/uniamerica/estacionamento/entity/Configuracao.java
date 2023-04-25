@@ -68,4 +68,5 @@ public class Configuracao extends AbstractEntity {
     private int vagasVan;
 
 
+
 }

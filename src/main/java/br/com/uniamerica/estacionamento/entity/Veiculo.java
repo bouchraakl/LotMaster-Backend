@@ -33,5 +33,5 @@ public class Veiculo extends AbstractEntity {
     @Getter @Setter
     @Column(name = "tipo", nullable = false)
     private Tipo tipo;
-
+    
 }

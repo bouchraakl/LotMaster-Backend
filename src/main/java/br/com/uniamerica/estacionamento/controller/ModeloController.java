@@ -19,31 +19,29 @@ public class ModeloController {
     @Autowired
     private ModeloRepository modeloRepository;
 
-//    public ModeloController(ModeloRepository modeloRepository){
-//        this.modeloRepository = modeloRepository;
-//    }
 
-    /* modelo/id/1 */
-    @GetMapping("/{id}")
-    public ResponseEntity<Modelo> findByIdPath(@PathVariable("id") final Long id) {
-        return ResponseEntity.ok(new Modelo());
-    }
-
-
-    /* modelo?id=1&...*/
+    /* -------------------get by id--------------------------- */
     @GetMapping
     public ResponseEntity<?> findByIdRequest(@RequestParam("id") final Long id) {
         final Modelo modelo = this.modeloRepository.findById(id).orElse(null);
-        return modelo == null ? ResponseEntity.badRequest().body("Id Modelo Not Found") : ResponseEntity.ok(modelo);
+        return modelo == null ? ResponseEntity.badRequest().body("ID não encontrado") : ResponseEntity.ok(modelo);
     }
 
-    @GetMapping("/lista")
-    public ResponseEntity<?> listaCompleta() {
+    /* -------------------get by all--------------------------- */
+    @GetMapping("/all")
+    public ResponseEntity<?> findByAllRequest() {
         return ResponseEntity.ok(this.modeloRepository.findAll());
     }
 
+    /* -------------------get by ativos--------------------------- */
+    @GetMapping("/ativos")
+    public ResponseEntity<?> findMarcasAtivas() {
+        return ResponseEntity.ok(this.modeloRepository.findAllByActive(true));
+    }
+
+    /* -------------------post--------------------------- */
     @PostMapping
-    public ResponseEntity<?> cadastrar(@RequestBody final Modelo modelo) {
+    public ResponseEntity<?> registerModelo(@RequestBody final Modelo modelo) {
         try {
             this.modeloRepository.save(modelo);
             return ResponseEntity.ok("Registro Cadastrado com Sucesso");
@@ -52,9 +50,9 @@ public class ModeloController {
         }
     }
 
-
+    /* -------------------put--------------------------- */
     @PutMapping
-    public ResponseEntity<?> editar(
+    public ResponseEntity<?> editarModelo(
             @RequestParam("id") final Long id,
             @RequestBody final Modelo modelo
     ) {
@@ -74,6 +72,5 @@ public class ModeloController {
 
     }
 
-//    @DeleteMapping
 
 }

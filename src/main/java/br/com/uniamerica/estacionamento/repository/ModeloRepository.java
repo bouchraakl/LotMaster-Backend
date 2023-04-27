@@ -13,11 +13,10 @@ import java.util.List;
 //------------------------------------------------
 public interface ModeloRepository extends JpaRepository<Modelo, Long> {
     public List<Modelo> findByNome(final String nome);
-//
-//    @Query("from Modelo where nome like :nome")
-//    public List<Modelo> findByNomeLike(@Param("nome") final String nome);
-//
-//    @Query(value = "select * from modelos where nome like :nome", nativeQuery = true)
-//    public List<Modelo> findByNomeLikeNative(@Param("nome") final String nome);
+
+    @Query(value = "SELECT * FROM modelos WHERE ativo :true",nativeQuery = true)
+    public List<Modelo> findAllByActive(@Param("true") final boolean ativo);
+
+
 }
 

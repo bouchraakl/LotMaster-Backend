@@ -6,6 +6,8 @@ package br.com.uniamerica.estacionamento.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.envers.AuditTable;
+import org.hibernate.envers.Audited;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -13,7 +15,9 @@ import java.time.LocalTime;
 
 /* ----------------------------------------------------- */
 @Entity
+@Audited
 @Table(name = "movimentacoes", schema = "public")
+@AuditTable(value = "movimentacoes_audit",schema = "audit")
 public class Movimentacao extends AbstractEntity {
 
     @Getter

@@ -3,6 +3,7 @@ package br.com.uniamerica.estacionamento.controller;
 
 /* -------------------Imports--------------------------- */
 
+import br.com.uniamerica.estacionamento.entity.Condutor;
 import br.com.uniamerica.estacionamento.entity.Modelo;
 import br.com.uniamerica.estacionamento.entity.Movimentacao;
 import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
@@ -72,5 +73,20 @@ public class MovimentacaoController {
 
     }
 
+    /* -------------------delete--------------------------- */
+    @DeleteMapping
+    public ResponseEntity<?> exluirMovi(@RequestParam("id") final Long id) {
+        try {
+            final Movimentacao moviBanco = this.movimentacaoRepository.findById(id).
+                    orElseThrow(() -> new RuntimeException("Condutor não encontrado"));
+            if (!moviBanco.isAtivo()){
+                this.movimentacaoRepository.delete(moviBanco);
+            }
+            return ResponseEntity.ok("Registro apagado com sucesso!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
 
 }

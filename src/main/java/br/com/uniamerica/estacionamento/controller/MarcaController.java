@@ -5,6 +5,7 @@ package br.com.uniamerica.estacionamento.controller;
 
 import br.com.uniamerica.estacionamento.entity.Marca;
 import br.com.uniamerica.estacionamento.repository.MarcaRepository;
+import br.com.uniamerica.estacionamento.repository.ModeloRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,9 @@ public class MarcaController {
 
     @Autowired
     private MarcaRepository marcaRepository;
+
+    @Autowired
+    private ModeloRepository modeloRepository;
 
     /* -------------------get by id--------------------------- */
     @GetMapping
@@ -71,10 +75,23 @@ public class MarcaController {
 
     /* -------------------delete--------------------------- */
     @DeleteMapping
-    public ResponseEntity<?> excluir(@RequestParam("id") final Long id) {
-        final Marca marca = this.marcaRepository.findById(id).orElse(null);
-        this.marcaRepository.delete(marca);
-        return ResponseEntity.ok("Registro Excluido com sucesso");
+    public ResponseEntity<?> exluirMarca(@RequestParam("id") final Long id) {
+        try {
+            final Marca marcaBanco = this.marcaRepository.findById(id).
+                    orElseThrow(() -> new RuntimeException("Condutor não encontrado"));
+            if (!this.modeloRepository.findByMarcaId(id).isEmpty()) {
+                marcaBanco.setAtivo(false);
+                this.marcaRepository.save(marcaBanco);
+                return ResponseEntity.ok("Registro Desativado com sucesso!");
+            } else {
+                this.marcaRepository.delete(marcaBanco);
+                return ResponseEntity.ok("Registro apagado com sucesso!");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
     }
+
 
 }

@@ -40,7 +40,7 @@ public class ConfiguracaoController {
 
     /* -------------------put--------------------------- */
     @PutMapping
-    public ResponseEntity<?> editarMarca(
+    public ResponseEntity<?> editarConfiguracao(
             @RequestParam("id") final Long id,
             @RequestBody final Configuracao configuracao
     ) {

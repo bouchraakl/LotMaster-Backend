@@ -4,6 +4,7 @@ package br.com.uniamerica.estacionamento.repository;
 /* -------------------Imports--------------------------- */
 
 import br.com.uniamerica.estacionamento.entity.Condutor;
+import jakarta.validation.Valid;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,6 +17,5 @@ public interface CondutorRepository extends JpaRepository<Condutor, Long> {
 
     @Query(value = "SELECT * FROM condutores WHERE ativo like :true",nativeQuery = true)
         public List<Condutor> findAllByActive(@Param("true") final boolean ativo);
-
 
 }

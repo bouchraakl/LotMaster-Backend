@@ -5,6 +5,7 @@ package br.com.uniamerica.estacionamento.controller;
 
 import br.com.uniamerica.estacionamento.entity.Condutor;
 import br.com.uniamerica.estacionamento.repository.CondutorRepository;
+import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,10 @@ public class CondutorController {
 
     @Autowired
     private CondutorRepository condutorRepository;
+
+    @Autowired
+    private MovimentacaoRepository movimentacaoRepository;
+
 
     /* -------------------get by id--------------------------- */
     @GetMapping
@@ -70,8 +75,23 @@ public class CondutorController {
     }
 
     /* -------------------delete--------------------------- */
+    @DeleteMapping
+    public ResponseEntity<?> exluirCondutor(@RequestParam("id") final Long id) {
+        try {
+            final Condutor condutorBanco = this.condutorRepository.findById(id).
+                    orElseThrow(() -> new RuntimeException("Condutor não encontrado"));
+            if (!this.movimentacaoRepository.findByCondutorId(id).isEmpty()) {
+                condutorBanco.setAtivo(false);
+                this.condutorRepository.save(condutorBanco);
+                return ResponseEntity.ok("Registro Desativado com sucesso!");
+            } else {
+                this.condutorRepository.delete(condutorBanco);
+                return ResponseEntity.ok("Registro apagado com sucesso!");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
 
-
-
+    }
 
 }

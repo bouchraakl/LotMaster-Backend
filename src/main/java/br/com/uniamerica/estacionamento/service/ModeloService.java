@@ -34,7 +34,7 @@ public class ModeloService {
 
         // Verificar se o nome do modelo já existe
         final List<Modelo> modelosByNome = this.modeloRepository.findByNome(modelo.getNome());
-        Assert.isTrue(modelosByNome.isEmpty(), "Nome do modelo já cadastrado");
+        Assert.isTrue(modelosByNome.isEmpty(), "nome do modelo já cadastrado");
 
         // Verificar se a marca já foi cadastrada
         final Marca marca = this.marcaRepository.findById(modelo.getMarca().getId()).orElse(null);

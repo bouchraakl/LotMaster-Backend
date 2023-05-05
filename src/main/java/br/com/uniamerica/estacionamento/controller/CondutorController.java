@@ -6,6 +6,7 @@ package br.com.uniamerica.estacionamento.controller;
 import br.com.uniamerica.estacionamento.entity.Condutor;
 import br.com.uniamerica.estacionamento.repository.CondutorRepository;
 import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
+import br.com.uniamerica.estacionamento.service.CondutorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,9 @@ public class CondutorController {
 
     @Autowired
     private CondutorRepository condutorRepository;
+
+    @Autowired
+    private CondutorService condutorService;
 
     @Autowired
     private MovimentacaoRepository movimentacaoRepository;
@@ -47,10 +51,11 @@ public class CondutorController {
     @PostMapping
     public ResponseEntity<?> cadastrarCondutor(@RequestBody final Condutor condutor) {
         try {
+            this.condutorService.validarCadastroCondutor(condutor);
             this.condutorRepository.save(condutor);
             return ResponseEntity.ok("Condutor Cadastrado com Sucesso");
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("ERRO :" + e.getCause().getCause().getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.internalServerError().body("ERRO :" + e.getMessage());
         }
     }
 
@@ -61,16 +66,12 @@ public class CondutorController {
             @RequestBody final Condutor condutor
     ) {
         try {
-            final Condutor condutorBanco = this.condutorRepository.findById(id).orElse(null);
-            if (condutorBanco == null) {
-                throw new RuntimeException("Nao foi possivel identificar o Registro informado");
-            }
+            this.condutorService.validarUpdateCondutor(condutor);
             this.condutorRepository.save(condutor);
             return ResponseEntity.ok("Registro atualizado com sucesso");
-        } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.internalServerError().body("Error: " + e.getCause().getCause().getMessage());
-        } catch (RuntimeException e) {
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+
         }
     }
 

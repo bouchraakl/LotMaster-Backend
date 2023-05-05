@@ -14,6 +14,7 @@ import org.hibernate.envers.Audited;
 @Audited
 @Table(name = "modelos", schema = "public")
 @AuditTable(value = "modelos_audit",schema = "audit")
+
 public class Modelo extends AbstractEntity {
 
     @Getter

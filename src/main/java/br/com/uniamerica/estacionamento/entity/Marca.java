@@ -20,7 +20,7 @@ public class Marca extends AbstractEntity {
 
     @Getter
     @Setter
-    @Column(name = "nome", nullable = false, unique = true)
+    @Column(name = "nome", nullable = false)
     private String nome;
 
 }

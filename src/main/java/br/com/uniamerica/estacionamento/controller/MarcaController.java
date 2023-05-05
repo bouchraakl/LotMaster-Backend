@@ -6,6 +6,7 @@ package br.com.uniamerica.estacionamento.controller;
 import br.com.uniamerica.estacionamento.entity.Marca;
 import br.com.uniamerica.estacionamento.repository.MarcaRepository;
 import br.com.uniamerica.estacionamento.repository.ModeloRepository;
+import br.com.uniamerica.estacionamento.service.MarcaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,9 @@ public class MarcaController {
 
     @Autowired
     private ModeloRepository modeloRepository;
+
+    @Autowired
+    private MarcaService marcaService;
 
     /* -------------------get by id--------------------------- */
     @GetMapping
@@ -46,10 +50,11 @@ public class MarcaController {
     @PostMapping
     public ResponseEntity<?> registerMarca(@RequestBody final Marca marca) {
         try {
+            this.marcaService.validarCadastroMarca(marca);
             this.marcaRepository.save(marca);
             return ResponseEntity.ok("Marca Registrada Com Sucesso");
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("ERRO :" + e.getCause().getCause().getMessage());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.internalServerError().body("ERRO :" + e.getMessage());
         }
     }
 
@@ -58,12 +63,9 @@ public class MarcaController {
     public ResponseEntity<?> editarMarca(
             @RequestParam("id") final Long id,
             @RequestBody final Marca marca
-            ) {
+    ) {
         try {
-            final Marca marcaBanco = this.marcaRepository.findById(id).orElse(null);
-            if (marcaBanco == null || marcaBanco.getId().equals(marca.getId())) {
-                throw new RuntimeException("Nao foi possivel identificar o Registro informado");
-            }
+            this.marcaService.validarUpdateMarca(marca);
             this.marcaRepository.save(marca);
             return ResponseEntity.ok("Registro atualizado com sucesso");
         } catch (DataIntegrityViolationException e) {

@@ -7,6 +7,7 @@ import br.com.uniamerica.estacionamento.entity.Condutor;
 import br.com.uniamerica.estacionamento.entity.Veiculo;
 import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
 import br.com.uniamerica.estacionamento.repository.VeiculoRepository;
+import br.com.uniamerica.estacionamento.service.VeiculoService;
 import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -23,6 +24,9 @@ public class VeiculoController {
 
     @Autowired
     private VeiculoRepository veiculoRepository;
+
+    @Autowired
+    private VeiculoService veiculoService;
 
     @Autowired
     private MovimentacaoRepository movimentacaoRepository;
@@ -44,9 +48,9 @@ public class VeiculoController {
     @GetMapping("/ativos")
     public ResponseEntity<?> findVeiculosAtivas() {
         List<Veiculo> veiculoList = this.veiculoRepository.findAllByActive(true);
-        if (veiculoList == null || veiculoList.isEmpty()){
+        if (veiculoList == null || veiculoList.isEmpty()) {
             return ResponseEntity.badRequest().body("Não tem nem um veiculo ativo");
-        }else{
+        } else {
             return ResponseEntity.ok(veiculoList);
         }
     }
@@ -55,6 +59,7 @@ public class VeiculoController {
     @PostMapping
     public ResponseEntity<?> registerVeiculos(@RequestBody final Veiculo veiculo) {
         try {
+            this.veiculoService.validarCadastroVeiculo(veiculo);
             this.veiculoRepository.save(veiculo);
             return ResponseEntity.ok("Registro Cadastrado com Sucesso");
         } catch (Exception e) {
@@ -70,15 +75,10 @@ public class VeiculoController {
     ) {
 
         try {
-            final Veiculo veiculoBanco = this.veiculoRepository.findById(id).orElse(null);
-            if (veiculoBanco == null || veiculoBanco.getId().equals(veiculo.getId())) {
-                throw new RuntimeException("Nao foi possivel identificar o registro informado");
-            }
+            this.veiculoService.validarUpdateVeiculo(veiculo);
             this.veiculoRepository.save(veiculo);
             return ResponseEntity.ok("Registro atualizado com sucesso");
-        } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.internalServerError().body("Error: " + e.getCause().getCause().getMessage());
-        } catch (RuntimeException e) {
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
         }
 

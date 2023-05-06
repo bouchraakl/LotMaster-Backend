@@ -22,16 +22,18 @@ public class MarcaService {
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarCadastroMarca(Marca marca) {
+
+        // Verificar se a id marca já existe
+        Assert.isTrue(marcaRepository.existsById(marca.getId()),
+                "ID já existe no banco de dados : " + marca.getId());
+
         // Verificar se o nome está informado
         Assert.notNull(marca.getNome(), "Nome do marca não informado!");
 
         // Verificar se o nome do marca já existe
         List<Marca> marcasByNome = marcaRepository.findByNome(marca.getNome());
-        Assert.isTrue(marcasByNome.isEmpty(), "Nome do marca já cadastrado.");
+        Assert.isTrue(marcasByNome.isEmpty(), "Nome da marca já cadastrada.");
 
-        // Verificar se a marca já foi cadastrada
-        Marca marcaBanco = marcaRepository.findById(marca.getId()).orElse(null);
-        Assert.notNull(marcaBanco, "Objeto marca já cadastrado no banco de dados.");
     }
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)
@@ -41,6 +43,18 @@ public class MarcaService {
 
         // Verificar se os campos obrigatórios foram preenchidos
         Assert.notNull(marca.getNome(), "Nome do marca não informado.");
+
+        // Verificar se o nome do marca já existe
+        List<Marca> marcasByNome = marcaRepository.findByNome(marca.getNome());
+        Assert.isTrue(marcasByNome.isEmpty(), "Nome da marca já cadastrada.");
+
+    }
+
+    @Transactional(readOnly = true,rollbackFor = Exception.class)
+    public void validarDeleteMarca(Marca marca){
+
+        // Verificar se o ID do modelo existe
+        Assert.notNull(marca.getId(),"ID marca não existe no banco de dados");
     }
 
 }

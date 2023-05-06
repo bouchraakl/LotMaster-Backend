@@ -26,8 +26,10 @@ public class VeiculoService {
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarCadastroVeiculo(Veiculo veiculo) {
-        // Verificar se o ID já existe
-        Assert.notNull(veiculo.getId(), "Veículo não cadastrado no banco de dados.");
+
+        // Verificar se a id veiculo já existe
+        Assert.isTrue(veiculoRepository.existsById(veiculo.getId()),
+                "ID já existe no banco de dados : " + veiculo.getId());
 
         // Verificar se a placa não está vazia e é válida
         Assert.notNull(veiculo.getPlaca(), "Placa não informada.");
@@ -56,6 +58,12 @@ public class VeiculoService {
         /* Verificar se os campos obrigatórios são preenchidos */
         Assert.notNull(veiculo.getPlaca(), "Placa não informada.");
         validarPlaca(veiculo.getPlaca());
+
+        // Verificar se o modelo do veículo não é nulo.
+        Assert.notNull(veiculo.getModelo(), "Objeto modelo não informado.");
+
+        // Verificar se a marca associada para o veículo não é nula.
+        Assert.notNull(veiculo.getModelo().getMarca(), "Objeto modelo não informado.");
 
         validarTipoVeiculo(veiculo.getTipo());
         validarCorVeiculo(veiculo.getCor());

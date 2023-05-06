@@ -61,6 +61,10 @@ public class CondutorService {
         Assert.notNull(condutor.getCpf(), "CPF do condutor não informado.");
         Assert.notNull(condutor.getTelefone(), "Telefone do condutor não informado.");
 
+        // Verificar se o CPF informado e unique
+        final List<Condutor> condutorbyCPF = this.condutorRepository.findbyCPF(condutor.getCpf());
+        Assert.isTrue(condutorbyCPF.isEmpty(),"CPF existe no banco de dados");
+
         // Verificar se o CPF está no padrão correto
         final String cpfFormat = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}";
         Assert.isTrue(condutor.getCpf().matches(cpfFormat), "CPF inválido!");

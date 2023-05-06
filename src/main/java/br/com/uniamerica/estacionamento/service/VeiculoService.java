@@ -75,7 +75,7 @@ public class VeiculoService {
     public void validarDeleteVeiculo(Veiculo veiculo){
 
         // Verificar se o ID do veiculo existe
-        Assert.notNull(veiculo.getId(),"ID marca não existe no banco de dados");
+        Assert.notNull(veiculo.getId(),"ID veiculo não existe no banco de dados");
     }
 
     public void validarPlaca(String placa) {

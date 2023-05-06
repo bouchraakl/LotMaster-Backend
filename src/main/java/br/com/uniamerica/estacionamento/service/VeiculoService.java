@@ -4,6 +4,7 @@ package br.com.uniamerica.estacionamento.service;
 //------------------Imports----------------------
 
 import br.com.uniamerica.estacionamento.entity.Cor;
+import br.com.uniamerica.estacionamento.entity.Marca;
 import br.com.uniamerica.estacionamento.entity.Tipo;
 import br.com.uniamerica.estacionamento.entity.Veiculo;
 import br.com.uniamerica.estacionamento.repository.VeiculoRepository;
@@ -68,6 +69,13 @@ public class VeiculoService {
         validarTipoVeiculo(veiculo.getTipo());
         validarCorVeiculo(veiculo.getCor());
         validarAnoVeiculo(veiculo.getAno());
+    }
+
+    @Transactional(readOnly = true,rollbackFor = Exception.class)
+    public void validarDeleteVeiculo(Veiculo veiculo){
+
+        // Verificar se o ID do veiculo existe
+        Assert.notNull(veiculo.getId(),"ID marca não existe no banco de dados");
     }
 
     public void validarPlaca(String placa) {

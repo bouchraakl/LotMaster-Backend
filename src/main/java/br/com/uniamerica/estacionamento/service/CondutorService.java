@@ -4,11 +4,14 @@ package br.com.uniamerica.estacionamento.service;
 //------------------Imports----------------------
 
 import br.com.uniamerica.estacionamento.entity.Condutor;
+import br.com.uniamerica.estacionamento.entity.Modelo;
 import br.com.uniamerica.estacionamento.repository.CondutorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+
+import java.util.List;
 
 
 //------------------------------------------------
@@ -20,8 +23,17 @@ public class CondutorService {
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarCadastroCondutor(Condutor condutor) {
+
+        // Verificar se a id modelo já existe
+        Assert.isTrue(condutorRepository.existsById(condutor.getId()),
+                "ID já existe no banco de dados : " + condutor.getId());
+
         // Verificar se o nome está informado
         Assert.notNull(condutor.getNome(), "Nome do condutor não informado!");
+
+        // Verificar se o CPF informado e unique
+        final List<Condutor> condutorbyCPF = this.condutorRepository.findbyCPF(condutor.getCpf());
+        Assert.isTrue(condutorbyCPF.isEmpty(),"CPF existe no banco de dados");
 
         // Verificar se o CPF está informado
         Assert.notNull(condutor.getCpf(), "CPF não informado!");
@@ -56,6 +68,13 @@ public class CondutorService {
         // Verificar se o telefone está válido
         final String telefoneFormat = "\\+55\\(\\d{2}\\)\\d{9}";
         Assert.isTrue(condutor.getTelefone().matches(telefoneFormat), "Telefone inválido!");
+    }
+
+    @Transactional(readOnly = true,rollbackFor = Exception.class)
+    public void validarDeleteCondutor(Condutor condutor){
+
+        // Verificar se o ID do modelo existe
+        Assert.notNull(condutor.getId(),"ID modelo não existe no banco de dados");
     }
 
 }

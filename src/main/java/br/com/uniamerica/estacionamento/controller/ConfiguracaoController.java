@@ -6,6 +6,7 @@ package br.com.uniamerica.estacionamento.controller;
 import br.com.uniamerica.estacionamento.entity.Configuracao;
 import br.com.uniamerica.estacionamento.entity.Marca;
 import br.com.uniamerica.estacionamento.repository.ConfiguracaoRepository;
+import br.com.uniamerica.estacionamento.service.ConfiguracaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,9 @@ public class ConfiguracaoController {
     @Autowired
     private ConfiguracaoRepository configuracaoRepository;
 
+    @Autowired
+    private ConfiguracaoService configuracaoService;
+
     /* -------------------get by id--------------------------- */
     @GetMapping
     public ResponseEntity<?> findByIdRequest(@RequestParam("id") final Long id) {
@@ -31,6 +35,7 @@ public class ConfiguracaoController {
     @PostMapping
     public ResponseEntity<?> registerMarca(@RequestBody final Configuracao configuracao) {
         try {
+            this.configuracaoService.validarCadastroConfiguracao(configuracao);
             this.configuracaoRepository.save(configuracao);
             return ResponseEntity.ok("Configuracao Registrada Com Sucesso");
         } catch (Exception e) {
@@ -45,10 +50,7 @@ public class ConfiguracaoController {
             @RequestBody final Configuracao configuracao
     ) {
         try {
-            final Configuracao configuracaoBanco = this.configuracaoRepository.findById(id).orElse(null);
-            if (configuracaoBanco == null || configuracaoBanco.getId().equals(configuracao.getId())) {
-                throw new RuntimeException("Nao foi possivel identificar o Registro informado");
-            }
+            this.configuracaoService.validarUpdateConfiguracao(configuracao);
             this.configuracaoRepository.save(configuracao);
             return ResponseEntity.ok("Registro atualizado com sucesso");
         } catch (DataIntegrityViolationException e) {

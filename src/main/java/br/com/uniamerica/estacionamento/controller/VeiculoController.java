@@ -63,7 +63,7 @@ public class VeiculoController {
             this.veiculoRepository.save(veiculo);
             return ResponseEntity.ok("Registro Cadastrado com Sucesso");
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error: " + e.getCause().getCause().getMessage());
+            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
         }
     }
 

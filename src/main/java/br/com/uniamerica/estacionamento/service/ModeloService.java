@@ -27,6 +27,10 @@ public class ModeloService {
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarCadastroModelo(Modelo modelo) {
 
+        // Verificar se a id modelo já existe
+        Assert.isTrue(modeloRepository.existsById(modelo.getId()),
+                "ID já existe no banco de dados : " + modelo.getId());
+
         // Verificar se o nome está informado
         Assert.notNull(modelo.getNome(), "Nome do modelo não informado!");
 
@@ -48,9 +52,6 @@ public class ModeloService {
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarUpdateModelo(Modelo modelo) {
-
-//        // Verificar se o ID do modelo não é nulo
-//        Assert.notNull(modelo.getId(), "Objeto modelo não encontrado no banco de dados");
 
         // Verificar se o nome do modelo já existe
         final List<Modelo> modelosByNome = this.modeloRepository.findByNome(modelo.getNome());

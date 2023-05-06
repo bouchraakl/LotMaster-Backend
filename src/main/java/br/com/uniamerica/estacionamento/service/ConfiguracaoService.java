@@ -27,7 +27,7 @@ public class ConfiguracaoService {
                 "O horário de fim de expediente não pode ser nulo.");
     }
 
-    @Transactional
+    @Transactional(readOnly = true,rollbackFor = Exception.class)
     public void validarUpdateConfiguracao(Configuracao configuracao) {
 
         /*Verifica se a configuracao existe */

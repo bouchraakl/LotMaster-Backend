@@ -79,8 +79,9 @@ public class MarcaController {
     @DeleteMapping
     public ResponseEntity<?> exluirMarca(@RequestParam("id") final Long id) {
         try {
+            this.marcaService.validarDeleteMarca(id);
             final Marca marcaBanco = this.marcaRepository.findById(id).
-                    orElseThrow(() -> new RuntimeException("Condutor não encontrado"));
+                    orElseThrow(() -> new RuntimeException("Marca não encontrada"));
             if (!this.modeloRepository.findByMarcaId(id).isEmpty()) {
                 marcaBanco.setAtivo(false);
                 this.marcaRepository.save(marcaBanco);

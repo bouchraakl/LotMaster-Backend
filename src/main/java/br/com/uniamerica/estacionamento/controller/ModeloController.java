@@ -3,6 +3,7 @@ package br.com.uniamerica.estacionamento.controller;
 
 /* -------------------Imports--------------------------- */
 
+import br.com.uniamerica.estacionamento.entity.Marca;
 import br.com.uniamerica.estacionamento.entity.Modelo;
 import br.com.uniamerica.estacionamento.repository.ModeloRepository;
 import br.com.uniamerica.estacionamento.repository.VeiculoRepository;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 /* ----------------------------------------------------- */
@@ -72,23 +74,30 @@ public class ModeloController {
             this.modeloRepository.save(modelo);
             return ResponseEntity.ok("Registro atualizado com sucesso");
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(e.getMessage());
         }
 
     }
 
     /* -------------------delete--------------------------- */
     @DeleteMapping
-    public ResponseEntity<?> delete(@RequestParam("id") final Long id) {
+    public ResponseEntity<?> exluirMarca(@RequestParam("id") final Long id) {
         try {
-            final Modelo modeloBanco = this.modeloRepository.findById(id).orElse(null);
-            assert modeloBanco != null;
-            this.modeloRepository.delete(modeloBanco);
-            return ResponseEntity.ok("Registro atualizado com sucesso");
-
-        } catch (RuntimeException e) {
-            return ResponseEntity.internalServerError().body("Error " + e.getMessage());
+            this.modeloService.validarDeleteModelo(id);
+            final Modelo modeloBanco = this.modeloRepository.findById(id).
+                    orElseThrow(() -> new RuntimeException("Modelo não encontrada"));
+            if (!this.modeloRepository.findByMarcaId(id).isEmpty()) {
+                modeloBanco.setAtivo(false);
+                this.modeloRepository.save(modeloBanco);
+                return ResponseEntity.ok("Registro Desativado com sucesso!");
+            } else {
+                this.modeloRepository.delete(modeloBanco);
+                return ResponseEntity.ok("Registro apagado com sucesso!");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
+
     }
 
 }

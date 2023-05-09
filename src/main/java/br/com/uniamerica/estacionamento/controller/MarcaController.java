@@ -52,9 +52,9 @@ public class MarcaController {
         try {
             this.marcaService.validarCadastroMarca(marca);
             this.marcaRepository.save(marca);
-            return ResponseEntity.ok("Marca Registrada Com Sucesso");
+            return ResponseEntity.ok("Marca registrada com sucesso");
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.internalServerError().body("ERRO :" + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 

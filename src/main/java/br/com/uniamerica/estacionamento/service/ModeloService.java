@@ -27,10 +27,6 @@ public class ModeloService {
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarCadastroModelo(Modelo modelo) {
 
-        // Verificar se a id modelo já existe
-        Assert.isTrue(modeloRepository.existsById(modelo.getId()),
-                "ID já existe no banco de dados : " + modelo.getId());
-
         // Verificar se o nome está informado
         Assert.notNull(modelo.getNome(), "Nome do modelo não informado!");
 
@@ -39,15 +35,8 @@ public class ModeloService {
 
         // Verificar se o nome do modelo já existe
         final List<Modelo> modelosByNome = this.modeloRepository.findByNome(modelo.getNome());
-        Assert.isTrue(modelosByNome.isEmpty(), "nome do modelo já cadastrado");
+        Assert.isTrue(modelosByNome.isEmpty(), "Nome do modelo existe no banco de dados");
 
-        // Verificar se o nome do marca já existe
-        final List<Marca> marcasByNome = this.marcaRepository.findByNome(modelo.getMarca().getNome());
-        Assert.isTrue(marcasByNome.isEmpty(), "nome da marca já cadastrado");
-
-        // Verificar se a marca já foi cadastrada
-        final Marca marca = this.marcaRepository.findById(modelo.getMarca().getId()).orElse(null);
-        Assert.isNull(marca, "Objeto marca já cadastrado no banco de dados");
     }
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)
@@ -55,25 +44,26 @@ public class ModeloService {
 
         // Verificar se o nome do modelo já existe
         final List<Modelo> modelosByNome = this.modeloRepository.findByNome(modelo.getNome());
-        Assert.isTrue(modelosByNome.isEmpty(), "nome do modelo já cadastrado");
+        Assert.isTrue(modelosByNome.isEmpty(), "Nome do modelo já existe no banco de dados.");
 
-        // Verificar se o nome do marca já existe
-        final List<Marca> marcasByNome = this.marcaRepository.findByNome(modelo.getMarca().getNome());
-        Assert.isTrue(marcasByNome.isEmpty(), "nome da marca já cadastrado");
+        // Verificar se a marca foi informada
+        Assert.notNull(modelo.getMarca(), "Objeto marca não informado!");
 
         // Verificar se o ID da marca não é nulo
-        Assert.notNull(modelo.getMarca().getId(), "Objeto marca não encontrado no banco de dados");
+        Assert.notNull(modelo.getMarca().getId(), "Objeto marca não encontrado no banco de dados.");
+
+        // Verificar se a id marca já existe
+        Assert.isTrue(marcaRepository.existsById(modelo.getMarca().getId()),
+                "ID não existe no banco de dados : " + modelo.getMarca().getId());
 
         // Verificar se os campos obrigatórios foram preenchidos
-        Assert.notNull(modelo.getNome(), "Nome do modelo não informado");
-        Assert.notNull(modelo.getCadastro(), "Data de cadastro do modelo não informada");
+        Assert.notNull(modelo.getNome(), "Nome do modelo não informado.");
+        Assert.notNull(modelo.getCadastro(), "Data de cadastro do modelo não informada.");
     }
 
     @Transactional(readOnly = true,rollbackFor = Exception.class)
-    public void validarDeleteModelo(Modelo modelo){
-
-        // Verificar se o ID do modelo existe
-        Assert.notNull(modelo.getId(),"ID modelo não existe no banco de dados");
+    public void validarDeleteModelo(Long id){
+        Assert.isTrue(modeloRepository.existsById(id), "ID do modelo não existe");
     }
 
 

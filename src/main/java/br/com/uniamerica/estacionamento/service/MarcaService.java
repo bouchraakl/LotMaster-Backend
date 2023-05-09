@@ -39,15 +39,13 @@ public class MarcaService {
 
         // Verificar se o nome do marca já existe
         List<Marca> marcasByNome = marcaRepository.findByNome(marca.getNome());
-        Assert.isTrue(marcasByNome.isEmpty(), "Nome da marca já cadastrada.");
+        Assert.isTrue(marcasByNome.isEmpty(), "Nome da marca existe no banco de dados.");
 
     }
 
     @Transactional(readOnly = true,rollbackFor = Exception.class)
-    public void validarDeleteMarca(Marca marca){
-
-        // Verificar se o ID do modelo existe
-        Assert.notNull(marca.getId(),"ID marca não existe no banco de dados");
+    public void validarDeleteMarca(Long id){
+        Assert.isTrue(marcaRepository.existsById(id), "ID marca não existe");
     }
 
 }

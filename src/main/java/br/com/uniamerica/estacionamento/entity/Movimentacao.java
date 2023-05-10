@@ -22,13 +22,13 @@ public class Movimentacao extends AbstractEntity {
 
     @Getter
     @Setter
-    @ManyToOne(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
-    @JoinColumn(name = "veiculo_id", nullable = false, unique = true)
+    @ManyToOne
+    @JoinColumn(name = "veiculo_id", nullable = false)
     private Veiculo veiculo;
 
     @Getter
     @Setter
-    @ManyToOne(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "condutor_id", nullable = false)
     private Condutor condutor;
 

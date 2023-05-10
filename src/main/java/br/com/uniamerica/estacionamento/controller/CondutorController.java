@@ -54,8 +54,8 @@ public class CondutorController {
             this.condutorService.validarCadastroCondutor(condutor);
             this.condutorRepository.save(condutor);
             return ResponseEntity.ok("Condutor Cadastrado com Sucesso");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.internalServerError().body("ERRO :" + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -79,6 +79,7 @@ public class CondutorController {
     @DeleteMapping
     public ResponseEntity<?> exluirCondutor(@RequestParam("id") final Long id) {
         try {
+            this.condutorService.validarDeleteCondutor(id);
             final Condutor condutorBanco = this.condutorRepository.findById(id).
                     orElseThrow(() -> new RuntimeException("Condutor não encontrado"));
             if (!this.movimentacaoRepository.findByCondutorId(id).isEmpty()) {

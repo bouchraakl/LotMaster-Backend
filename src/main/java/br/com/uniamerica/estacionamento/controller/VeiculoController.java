@@ -3,14 +3,11 @@ package br.com.uniamerica.estacionamento.controller;
 
 /* -------------------Imports--------------------------- */
 
-import br.com.uniamerica.estacionamento.entity.Condutor;
 import br.com.uniamerica.estacionamento.entity.Veiculo;
 import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
 import br.com.uniamerica.estacionamento.repository.VeiculoRepository;
 import br.com.uniamerica.estacionamento.service.VeiculoService;
-import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -78,8 +75,8 @@ public class VeiculoController {
             this.veiculoService.validarUpdateVeiculo(veiculo);
             this.veiculoRepository.save(veiculo);
             return ResponseEntity.ok("Registro atualizado com sucesso");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
         }
 
     }

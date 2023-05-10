@@ -31,6 +31,12 @@ public class ConfiguracaoController {
         return configuracao == null ? ResponseEntity.badRequest().body("ID não encontrado") : ResponseEntity.ok(configuracao);
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<?> getallRequest() {
+        return ResponseEntity.ok(this.configuracaoRepository.findAll());
+    }
+
+
     /* -------------------post--------------------------- */
     @PostMapping
     public ResponseEntity<?> registerMarca(@RequestBody final Configuracao configuracao) {
@@ -39,7 +45,7 @@ public class ConfiguracaoController {
             this.configuracaoRepository.save(configuracao);
             return ResponseEntity.ok("Configuracao Registrada Com Sucesso");
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("ERRO :" + e.getCause().getCause().getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -53,10 +59,8 @@ public class ConfiguracaoController {
             this.configuracaoService.validarUpdateConfiguracao(configuracao);
             this.configuracaoRepository.save(configuracao);
             return ResponseEntity.ok("Registro atualizado com sucesso");
-        } catch (DataIntegrityViolationException e) {
-            return ResponseEntity.internalServerError().body("Error: " + e.getCause().getCause().getMessage());
-        } catch (RuntimeException e) {
-            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }

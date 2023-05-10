@@ -7,7 +7,6 @@ import br.com.uniamerica.estacionamento.entity.Movimentacao;
 import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
 import br.com.uniamerica.estacionamento.service.MovimentacaoService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -46,10 +45,11 @@ public class MovimentacaoController {
     @PostMapping
     public ResponseEntity<?> registerMovimentacao(@RequestBody final Movimentacao movimentacao) {
         try {
+            this.movimentacaoService.validarCadastroMovimentacao(movimentacao);
             this.movimentacaoRepository.save(movimentacao);
             return ResponseEntity.ok("Registro Cadastrado com Sucesso");
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error: " + e.getCause().getCause().getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -61,24 +61,29 @@ public class MovimentacaoController {
     ) {
 
         try {
-            this.movimentacaoService.validarCadastroMovimentacao(movimentacao);
+            this.movimentacaoService.validarUpdateMovimentacao(movimentacao);
             this.movimentacaoRepository.save(movimentacao);
             return ResponseEntity.ok("Registro atualizado com sucesso");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     /* -------------------delete--------------------------- */
     @DeleteMapping
-    public ResponseEntity<?> exluirMovi(@RequestParam("id") final Long id) {
+    public ResponseEntity<?> exluirMovimentacao(@RequestParam("id") final Long id) {
         try {
-            final Movimentacao moviBanco = this.movimentacaoRepository.findById(id).
-                    orElseThrow(() -> new RuntimeException("Condutor não encontrado"));
-            if (!moviBanco.isAtivo()){
-                this.movimentacaoRepository.delete(moviBanco);
+            this.movimentacaoService.validarDeleteMovimentacao(id);
+            final Movimentacao movimentacao = this.movimentacaoRepository.findById(id).
+                    orElseThrow(() -> new RuntimeException("Movimentacao não encontrada"));
+            if (!this.movimentacaoRepository.findByCondutorId(id).isEmpty()) {
+                movimentacao.setAtivo(false);
+                this.movimentacaoRepository.save(movimentacao);
+                return ResponseEntity.ok("Registro Desativado com sucesso!");
+            } else {
+                this.movimentacaoRepository.delete(movimentacao);
+                return ResponseEntity.ok("Registro apagado com sucesso!");
             }
-            return ResponseEntity.ok("Registro apagado com sucesso!");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

@@ -16,7 +16,7 @@ public abstract class AbstractEntity {
     @Id
     @Getter @Setter
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id", nullable = false, unique = true)
+    @Column(name = "id", unique = true)
     private Long id;
 
     @Getter @Setter

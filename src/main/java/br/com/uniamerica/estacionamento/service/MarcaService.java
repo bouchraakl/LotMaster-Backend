@@ -43,9 +43,10 @@ public class MarcaService {
 
     }
 
-    @Transactional(readOnly = true,rollbackFor = Exception.class)
-    public void validarDeleteMarca(Long id){
-        Assert.isTrue(marcaRepository.existsById(id), "ID marca não existe");
+    @Transactional(readOnly = true, rollbackFor = Exception.class)
+    public void validarDeleteMarca(Long id) {
+        Assert.isTrue(marcaRepository.existsById(id),
+                "ID marca não existe");
     }
 
 }

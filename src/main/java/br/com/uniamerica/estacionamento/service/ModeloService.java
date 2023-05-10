@@ -34,7 +34,7 @@ public class ModeloService {
         Assert.notNull(modelo.getMarca(), "Objeto marca não informado!");
 
         // Verificar se o ID da marca do modelo não é nulo.
-        Assert.notNull(modelo.getMarca().getId(),"ID marca não informado.");
+        Assert.notNull(modelo.getMarca().getId(), "ID marca não informado.");
 
         // Verificar se o nome do modelo já existe
         final List<Modelo> modelosByNome = this.modeloRepository.findByNome(modelo.getNome());
@@ -64,8 +64,8 @@ public class ModeloService {
         Assert.notNull(modelo.getCadastro(), "Data de cadastro do modelo não informada.");
     }
 
-    @Transactional(readOnly = true,rollbackFor = Exception.class)
-    public void validarDeleteModelo(Long id){
+    @Transactional(readOnly = true, rollbackFor = Exception.class)
+    public void validarDeleteModelo(Long id) {
         Assert.isTrue(modeloRepository.existsById(id), "ID do modelo não existe");
     }
 

@@ -29,7 +29,7 @@ public class CondutorService {
 
         // Verificar se o CPF is unique
         final List<Condutor> condutorbyCPF = this.condutorRepository.findbyCPF(condutor.getCpf());
-        Assert.isTrue(condutorbyCPF.isEmpty(),"CPF existe no banco de dados");
+        Assert.isTrue(condutorbyCPF.isEmpty(), "CPF existe no banco de dados");
 
         // Verificar se o CPF está informado
         Assert.notNull(condutor.getCpf(), "CPF não informado!");
@@ -54,7 +54,7 @@ public class CondutorService {
 
         // Verificar se o CPF informado e unique
         final List<Condutor> condutorbyCPF = this.condutorRepository.findbyCPF(condutor.getCpf());
-        Assert.isTrue(condutorbyCPF.isEmpty(),"CPF existe no banco de dados");
+        Assert.isTrue(condutorbyCPF.isEmpty(), "CPF existe no banco de dados");
 
         // Verificar se o CPF está no padrão correto
         final String cpfFormat = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}";
@@ -65,8 +65,8 @@ public class CondutorService {
         Assert.isTrue(condutor.getTelefone().matches(telefoneFormat), "Telefone em formato inválido.");
     }
 
-    @Transactional(readOnly = true,rollbackFor = Exception.class)
-    public void validarDeleteCondutor(Long id){
+    @Transactional(readOnly = true, rollbackFor = Exception.class)
+    public void validarDeleteCondutor(Long id) {
 
         Assert.isTrue(condutorRepository.existsById(id), "ID condutor não existe.");
 

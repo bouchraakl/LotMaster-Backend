@@ -24,14 +24,10 @@ public class CondutorService {
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarCadastroCondutor(Condutor condutor) {
 
-        // Verificar se a id modelo já existe
-        Assert.isTrue(condutorRepository.existsById(condutor.getId()),
-                "ID já existe no banco de dados : " + condutor.getId());
-
         // Verificar se o nome está informado
         Assert.notNull(condutor.getNome(), "Nome do condutor não informado!");
 
-        // Verificar se o CPF informado e unique
+        // Verificar se o CPF is unique
         final List<Condutor> condutorbyCPF = this.condutorRepository.findbyCPF(condutor.getCpf());
         Assert.isTrue(condutorbyCPF.isEmpty(),"CPF existe no banco de dados");
 
@@ -40,21 +36,16 @@ public class CondutorService {
 
         // Verificar se o CPF está no padrão correto
         final String cpfFormat = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}";
-        Assert.isTrue(condutor.getCpf().matches(cpfFormat), "CPF inválido!");
+        Assert.isTrue(condutor.getCpf().matches(cpfFormat), "CPF em formato inválido.");
 
         // Verificar se o telefone está válido
         final String telefoneFormat = "\\+55\\(\\d{2}\\)\\d{9}";
-        Assert.isTrue(condutor.getTelefone().matches(telefoneFormat), "Telefone inválido!");
+        Assert.isTrue(condutor.getTelefone().matches(telefoneFormat), "Telefone em formato inválido.");
 
-        // Verificar se o condutor já foi cadastrado
-        final Condutor condutorBanco = this.condutorRepository.findById(condutor.getId()).orElse(null);
-        Assert.isNull(condutorBanco, "Condutor já cadastrado no banco de dados.");
     }
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarUpdateCondutor(Condutor condutor) {
-        // Verificar se o condutor com o ID informado existe no banco de dados
-        Assert.notNull(condutor.getId(), "Objeto condutor não encontrado no banco de dados.");
 
         // Verificar se os campos obrigatórios foram preenchidos
         Assert.notNull(condutor.getNome(), "Nome do condutor não informado.");
@@ -67,18 +58,18 @@ public class CondutorService {
 
         // Verificar se o CPF está no padrão correto
         final String cpfFormat = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}";
-        Assert.isTrue(condutor.getCpf().matches(cpfFormat), "CPF inválido!");
+        Assert.isTrue(condutor.getCpf().matches(cpfFormat), "CPF em formato inválido.");
 
         // Verificar se o telefone está válido
         final String telefoneFormat = "\\+55\\(\\d{2}\\)\\d{9}";
-        Assert.isTrue(condutor.getTelefone().matches(telefoneFormat), "Telefone inválido!");
+        Assert.isTrue(condutor.getTelefone().matches(telefoneFormat), "Telefone em formato inválido.");
     }
 
     @Transactional(readOnly = true,rollbackFor = Exception.class)
-    public void validarDeleteCondutor(Condutor condutor){
+    public void validarDeleteCondutor(Long id){
 
-        // Verificar se o ID do modelo existe
-        Assert.notNull(condutor.getId(),"ID modelo não existe no banco de dados");
+        Assert.isTrue(condutorRepository.existsById(id), "ID condutor não existe.");
+
     }
 
 }

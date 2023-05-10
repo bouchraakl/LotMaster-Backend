@@ -12,7 +12,9 @@ import java.util.List;
 
 /* ----------------------------------------------------- */
 public interface VeiculoRepository extends JpaRepository<Veiculo, Long> {
-    public List<Veiculo> findByPlaca(final String placa);
+
+    @Query("FROM Veiculo WHERE placa = :placa")
+    public List<Veiculo> findByPlaca(@Param("placa") final String placa);
 
     @Query(value = "SELECT * FROM veiculos WHERE ativo :true", nativeQuery = true)
     public List<Veiculo> findAllByActive(@Param("true") final boolean ativo);

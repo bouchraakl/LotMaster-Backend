@@ -16,6 +16,4 @@ import java.util.List;
 public interface ConfiguracaoRepository extends JpaRepository<Configuracao, Long> {
     public List<Configuracao> findByValorHora(final BigDecimal valorHora);
 
-    @Query("SELECT COUNT(v) FROM Veiculo v WHERE v.tipo = :tipo")
-    Integer countByTipo(@Param("tipo") Tipo tipo);
 }

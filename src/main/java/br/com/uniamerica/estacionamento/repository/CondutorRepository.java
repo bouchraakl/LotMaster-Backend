@@ -14,7 +14,7 @@ import java.util.List;
 public interface CondutorRepository extends JpaRepository<Condutor, Long> {
     public List<Condutor> findByNome(final String nome);
 
-    @Query(value = "SELECT * FROM condutores WHERE cpf like :cpf",nativeQuery = true)
+    @Query("from Condutor where cpf = :cpf")
     public List<Condutor> findbyCPF(@Param("cpf") final String cpf);
 
     @Query(value = "SELECT * FROM condutores WHERE ativo like :true", nativeQuery = true)

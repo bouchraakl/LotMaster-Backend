@@ -3,9 +3,13 @@ package br.com.uniamerica.estacionamento.service;
 
 //------------------Imports----------------------
 
+import br.com.uniamerica.estacionamento.entity.Configuracao;
 import br.com.uniamerica.estacionamento.entity.Movimentacao;
+import br.com.uniamerica.estacionamento.entity.Tipo;
+import br.com.uniamerica.estacionamento.repository.CondutorRepository;
 import br.com.uniamerica.estacionamento.repository.ConfiguracaoRepository;
 import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
+import br.com.uniamerica.estacionamento.repository.VeiculoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,69 +23,74 @@ import java.util.List;
 //------------------------------------------------
 @Service
 public class MovimentacaoService {
+    private static final LocalTime OPENING_TIME = LocalTime.parse("08:00:00");
+    private static final LocalTime CLOSING_TIME = LocalTime.parse("18:00:00");
+    private static final LocalTime CURRENT_TIME = LocalTime.now().withNano(0);
     @Autowired
     private MovimentacaoRepository movimentacaoRepository;
-
+    @Autowired
+    private VeiculoRepository veiculoRepository;
+    @Autowired
+    private CondutorRepository condutorRepository;
     @Autowired
     private ConfiguracaoRepository configuracaoRepository;
 
-    @Autowired
-    private VeiculoService veiculoService;
 
-    @Autowired
-    private CondutorService condutorService;
+
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarCadastroMovimentacao(Movimentacao movimentacao) {
 
-        // Verificar se a ID do veículo já existe
-        if (!movimentacaoRepository.existsById(movimentacao.getId())) {
-            throw new IllegalArgumentException("A ID do veículo não existe no banco de dados: " + movimentacao.getId());
-        }
+        Assert.notNull(movimentacao.getVeiculo(), "Objeto veículo não informado.");
+        Assert.isTrue(this.veiculoRepository.existsById(movimentacao.getVeiculo().getId()),
+                "ID veiculo não existe no banco de dados.");
+        Assert.notNull(movimentacao.getVeiculo().getId(), "ID veiculo não informado.");
 
-        // Executar validações no objeto do veículo
-        veiculoService.validarCadastroVeiculo(movimentacao.getVeiculo());
-
-        // Executar validações no objeto do condutor
-        condutorService.validarCadastroCondutor(movimentacao.getCondutor());
+        Assert.notNull(movimentacao.getCondutor(), "Objeto condutor não informado.");
+        Assert.isTrue(this.condutorRepository.existsById(movimentacao.getCondutor().getId()),
+                "ID condutor não existe no banco de dados.");
+        Assert.notNull(movimentacao.getCondutor().getId(), "ID condutor não informado.");
 
         // Verificar se a movimentação está dentro do horário de funcionamento do estacionamento
-        LocalTime inicioExpediente = LocalTime.parse("08:00:00");
-        LocalTime fimExpediente = LocalTime.parse("18:00:00");
-        LocalTime horarioMovimentacao = LocalTime.now().withNano(0);
-        if (horarioMovimentacao.isBefore(inicioExpediente) || horarioMovimentacao.isAfter(fimExpediente)) {
-            throw new IllegalArgumentException("A movimentação está fora do horário de funcionamento do estacionamento.");
-        }
+        Assert.isTrue(!CURRENT_TIME.isBefore(OPENING_TIME) || CURRENT_TIME.isAfter(CLOSING_TIME),
+                "A movimentação está fora do horário de funcionamento do estacionamento.");
 
-        // Verificar se há vagas disponíveis para o tipo de veículo informado
-        long numeroVagas = configuracaoRepository.countByTipo(movimentacao.getVeiculo().getTipo());
-        if (numeroVagas == 0) {
-            throw new IllegalArgumentException("Não há vagas disponíveis para o tipo de veículo informado.");
-        }
+
+
     }
-
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarUpdateMovimentacao(Movimentacao movimentacao) {
 
         // Verificar se o ID da movimentacao não é nula e valido
-        Assert.notNull(movimentacao.getId(), "Movimentação não cadastrada no banco de dados.");
+        Assert.notNull(movimentacao.getId(), "ID movimentacao não informado.");
 
-        // Verificar se o ID do veiculo não é nulo e valido
-        Assert.notNull(movimentacao.getVeiculo().getId(), "Veículo não cadastrado no banco de dados.");
+        Assert.notNull(movimentacao.getId(), "ID veiculo não informado.");
+        Assert.notNull(movimentacao.getVeiculo(), "Objeto veículo não informado.");
+        Assert.isTrue(this.veiculoRepository.existsById(movimentacao.getVeiculo().getId()),
+                "ID veiculo não existe no banco de dados.");
 
-        // Verificar se o ID do condutor não é nulo e valido
-        Assert.notNull(movimentacao.getCondutor().getId(), "Condutor não cadastrado no banco de dados.");
+        Assert.notNull(movimentacao.getId(), "ID condutor não informado.");
+        Assert.notNull(movimentacao.getCondutor(), "Objeto condutor não informado.");
+        Assert.isTrue(this.condutorRepository.existsById(movimentacao.getCondutor().getId()),
+                "ID condutor não existe no banco de dados.");
+
 
         // Verificar se os campos obrigatórios foram preenchidos
         Assert.notNull(movimentacao.getEntrada(), "Data de entrada não informada.");
         Assert.notNull(movimentacao.getSaida(), "Data de entrada não informada.");
-        Assert.notNull(movimentacao.getVeiculo(), "Veículo não informado.");
-        Assert.notNull(movimentacao.getCondutor(), "Condutor não informado.");
+
+        // Verificar se a movimentação está dentro do horário de funcionamento do estacionamento
+        Assert.isTrue(!CURRENT_TIME.isBefore(OPENING_TIME) || CURRENT_TIME.isAfter(CLOSING_TIME),
+                "A movimentação está fora do horário de funcionamento do estacionamento.");
+
+
+
     }
 
-    public void validarPlaca(String placa) {
-        final String PADRAO_REGEX_PLACA_BRASILEIRA = "^[A-Z]{3}\\d{4}$";
-        Assert.isTrue(placa.matches(PADRAO_REGEX_PLACA_BRASILEIRA), "Placa inválida.");
+    @Transactional(readOnly = true, rollbackFor = Exception.class)
+    public void validarDeleteMovimentacao(Long id) {
+        Assert.isTrue(movimentacaoRepository.existsById(id), "ID da movimentacao não existe.");
     }
+
 }

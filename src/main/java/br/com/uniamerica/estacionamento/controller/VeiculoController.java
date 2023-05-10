@@ -63,7 +63,7 @@ public class VeiculoController {
             this.veiculoRepository.save(veiculo);
             return ResponseEntity.ok("Registro Cadastrado com Sucesso");
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -88,6 +88,7 @@ public class VeiculoController {
     @DeleteMapping
     public ResponseEntity<?> exluirVeiculo(@RequestParam("id") final Long id) {
         try {
+            this.veiculoService.validarDeleteVeiculo(id);
             final Veiculo veiculoBanco = this.veiculoRepository.findById(id).
                     orElseThrow(() -> new RuntimeException("Veiculo não encontrado"));
             if (!this.movimentacaoRepository.findByCondutorId(id).isEmpty()) {

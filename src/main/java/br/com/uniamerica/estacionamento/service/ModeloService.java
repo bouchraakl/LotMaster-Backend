@@ -33,6 +33,9 @@ public class ModeloService {
         // Verificar se a marca foi informada
         Assert.notNull(modelo.getMarca(), "Objeto marca não informado!");
 
+        // Verificar se o ID da marca do modelo não é nulo.
+        Assert.notNull(modelo.getMarca().getId(),"ID marca não informado.");
+
         // Verificar se o nome do modelo já existe
         final List<Modelo> modelosByNome = this.modeloRepository.findByNome(modelo.getNome());
         Assert.isTrue(modelosByNome.isEmpty(), "Nome do modelo existe no banco de dados");

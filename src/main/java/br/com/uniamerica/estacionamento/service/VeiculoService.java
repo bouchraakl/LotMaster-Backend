@@ -3,10 +3,8 @@ package br.com.uniamerica.estacionamento.service;
 
 //------------------Imports----------------------
 
-import br.com.uniamerica.estacionamento.entity.Cor;
-import br.com.uniamerica.estacionamento.entity.Marca;
-import br.com.uniamerica.estacionamento.entity.Tipo;
-import br.com.uniamerica.estacionamento.entity.Veiculo;
+import br.com.uniamerica.estacionamento.entity.*;
+import br.com.uniamerica.estacionamento.repository.ModeloRepository;
 import br.com.uniamerica.estacionamento.repository.VeiculoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Range;
@@ -14,90 +12,83 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+
 import java.time.Year;
-import java.util.Arrays;
-import java.util.regex.Pattern;
+import java.util.List;
+
 
 //------------------------------------------------
 @Service
 public class VeiculoService {
 
+    private static final int MIN_ALLOWED_YEAR = 2008;
+    int currentYear = Year.now().getValue();
     @Autowired
     private VeiculoRepository veiculoRepository;
+
+    @Autowired
+    private ModeloRepository modeloRepository;
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarCadastroVeiculo(Veiculo veiculo) {
 
-        // Verificar se a id veiculo já existe
-        Assert.isTrue(veiculoRepository.existsById(veiculo.getId()),
-                "ID já existe no banco de dados : " + veiculo.getId());
+        Assert.notNull(veiculo.getCadastro(), "Data de cadastro não informada.");
+
+        Range<Integer> rangeAno = Range.closed(MIN_ALLOWED_YEAR, currentYear);
+        Assert.isTrue(rangeAno.contains(veiculo.getAno()), "Ano do veículo está fora do range permitido.");
+
+        Assert.notNull(veiculo.getCor(), "Cor do veículo não informada.");
 
         // Verificar se a placa não está vazia e é válida
+
+        final List<Veiculo> veiculoByPlaca = this.veiculoRepository.findByPlaca(veiculo.getPlaca());
+        Assert.isTrue(veiculoByPlaca.isEmpty(), "Placa existe no banco de dados.");
+
         Assert.notNull(veiculo.getPlaca(), "Placa não informada.");
-        validarPlaca(veiculo.getPlaca());
+
+        final String placaFormat = "^[A-Z]{3}\\d{4}$";
+        Assert.isTrue(veiculo.getPlaca().matches(placaFormat), "Placa em formato inválido.");
+
+        Assert.notNull(veiculo.getTipo(), "Tipo do veículo não informado.");
 
         // Verificar se o modelo do veículo não é nulo.
         Assert.notNull(veiculo.getModelo(), "Objeto modelo não informado.");
 
-        // Verificar se o tipo do veículo não é nulo.
-        Assert.notNull(veiculo.getTipo(), "Tipo do veículo não informado.");
-        validarTipoVeiculo(veiculo.getTipo());
+        // Verificar se o ID do modelo do veículo não é nulo.
+        Assert.notNull(veiculo.getModelo().getId(), "ID modelo não informado.");
 
-        // Verificar se a cor do veículo não é nula.
-        Assert.notNull(veiculo.getCor(), "Cor do veículo não informada.");
-        validarCorVeiculo(veiculo.getCor());
-
-        // Verificar se o ano do veículo é válido
-        validarAnoVeiculo(veiculo.getAno());
     }
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarUpdateVeiculo(Veiculo veiculo) {
         /* Verificar se o ID do veiculo não é nulo*/
-        Assert.notNull(veiculo.getId(), "Veículo não cadastrado no banco de dados.");
+        Assert.notNull(veiculo.getId(), "Veículo não existe no banco de dados.");
 
-        /* Verificar se os campos obrigatórios são preenchidos */
+        // Verificar se a placa não está vazia e é válida
+
+//        final List<Veiculo> veiculoByPlaca = this.veiculoRepository.findByPlaca(veiculo.getPlaca());
+//        Assert.isTrue(veiculoByPlaca.isEmpty(), "Placa existe no banco de dados.");
+
         Assert.notNull(veiculo.getPlaca(), "Placa não informada.");
-        validarPlaca(veiculo.getPlaca());
+
+        final String placaFormat = "^[A-Z]{3}\\d{4}$";
+        Assert.isTrue(veiculo.getPlaca().matches(placaFormat), "Placa em formato inválido.");
 
         // Verificar se o modelo do veículo não é nulo.
         Assert.notNull(veiculo.getModelo(), "Objeto modelo não informado.");
 
-        // Verificar se a marca associada para o veículo não é nula.
-        Assert.notNull(veiculo.getModelo().getMarca(), "Objeto modelo não informado.");
+        Assert.notNull(veiculo.getModelo().getId(), "ID modelo não informado.");
+        Assert.isTrue(this.modeloRepository.existsById(veiculo.getModelo().getId()),
+                "Modelo não existe no banco de dados");
 
-        validarTipoVeiculo(veiculo.getTipo());
-        validarCorVeiculo(veiculo.getCor());
-        validarAnoVeiculo(veiculo.getAno());
+        Range<Integer> rangeAno = Range.closed(MIN_ALLOWED_YEAR, currentYear);
+        Assert.isTrue(rangeAno.contains(veiculo.getAno()), "Ano do veículo está fora do range permitido.");
     }
 
-    @Transactional(readOnly = true,rollbackFor = Exception.class)
-    public void validarDeleteVeiculo(Veiculo veiculo){
-
-        // Verificar se o ID do veiculo existe
-        Assert.notNull(veiculo.getId(),"ID veiculo não existe no banco de dados");
+    @Transactional(readOnly = true, rollbackFor = Exception.class)
+    public void validarDeleteVeiculo(Long id) {
+        Assert.isTrue(veiculoRepository.existsById(id), "ID veiculo não existe");
     }
 
-    public void validarPlaca(String placa) {
-        final String PADRAO_REGEX_PLACA_BRASILEIRA = "^[A-Z]{3}\\d{4}$";
-        Assert.isTrue(placa.matches(PADRAO_REGEX_PLACA_BRASILEIRA), "Placa inválida.");
-    }
-
-    public void validarAnoVeiculo(int ano) {
-        Year thisYear = Year.now();
-        int currentYear = thisYear.getValue();
-        Range<Integer> rangeAno = Range.closed(2008, currentYear);
-        Assert.isTrue(rangeAno.contains(ano), "Ano do veículo está fora do range permitido.");
-    }
-
-    public void validarTipoVeiculo(Tipo tipo) {
-        Tipo[] tiposValidos = {Tipo.Carro, Tipo.Van, Tipo.Moto};
-        Assert.isTrue(Arrays.asList(tiposValidos).contains(tipo), "Tipo de veículo inválido.");
-    }
-
-    public void validarCorVeiculo(Cor cor) {
-        Cor[] coresValidas = {Cor.Azul, Cor.Branco, Cor.Cinza, Cor.Prata, Cor.Rosa, Cor.Preto};
-        Assert.isTrue(Arrays.asList(coresValidas).contains(cor), "Cor de veículo inválida.");
-    }
 
 }

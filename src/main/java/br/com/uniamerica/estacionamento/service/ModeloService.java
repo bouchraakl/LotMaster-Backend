@@ -40,6 +40,10 @@ public class ModeloService {
         final List<Modelo> modelosByNome = this.modeloRepository.findByNome(modelo.getNome());
         Assert.isTrue(modelosByNome.isEmpty(), "Nome do modelo existe no banco de dados");
 
+        Assert.hasText(modelo.getNome(),"Campo nome não preenchido.");
+
+        Assert.isTrue(modelo.getMarca().isAtivo(),"Marca inativa.");
+
     }
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)
@@ -62,6 +66,9 @@ public class ModeloService {
         // Verificar se os campos obrigatórios foram preenchidos
         Assert.notNull(modelo.getNome(), "Nome do modelo não informado.");
         Assert.notNull(modelo.getCadastro(), "Data de cadastro do modelo não informada.");
+
+        Assert.hasText(modelo.getNome(),"Campo nome não preenchido.");
+        Assert.isTrue(modelo.getMarca().isAtivo(),"Marca inativa.");
     }
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)

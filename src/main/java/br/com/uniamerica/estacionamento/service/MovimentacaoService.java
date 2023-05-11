@@ -37,6 +37,9 @@ public class MovimentacaoService {
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarCadastroMovimentacao(Movimentacao movimentacao) {
 
+        Assert.isTrue(movimentacao.getVeiculo().isAtivo(),"Veiculo inativo.");
+        Assert.isTrue(movimentacao.getCondutor().isAtivo(),"Condutor inativo.");
+
         Assert.notNull(movimentacao.getVeiculo(), "Objeto veículo não informado.");
         Assert.isTrue(this.veiculoRepository.existsById(movimentacao.getVeiculo().getId()),
                 "ID veiculo não existe no banco de dados.");
@@ -56,6 +59,9 @@ public class MovimentacaoService {
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarUpdateMovimentacao(Movimentacao movimentacao) {
+
+        Assert.isTrue(movimentacao.getVeiculo().isAtivo(),"Veiculo inativo.");
+        Assert.isTrue(movimentacao.getCondutor().isAtivo(),"Condutor inativo.");
 
         // Verificar se o ID da movimentacao não é nula e valido
         Assert.notNull(movimentacao.getId(), "ID movimentacao não informado.");

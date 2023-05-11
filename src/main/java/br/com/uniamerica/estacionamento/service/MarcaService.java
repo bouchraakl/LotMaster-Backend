@@ -4,9 +4,7 @@ package br.com.uniamerica.estacionamento.service;
 //------------------Imports----------------------
 
 import br.com.uniamerica.estacionamento.entity.Marca;
-import br.com.uniamerica.estacionamento.entity.Modelo;
 import br.com.uniamerica.estacionamento.repository.MarcaRepository;
-import br.com.uniamerica.estacionamento.repository.ModeloRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

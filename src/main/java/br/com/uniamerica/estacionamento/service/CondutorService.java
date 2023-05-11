@@ -4,7 +4,6 @@ package br.com.uniamerica.estacionamento.service;
 //------------------Imports----------------------
 
 import br.com.uniamerica.estacionamento.entity.Condutor;
-import br.com.uniamerica.estacionamento.entity.Modelo;
 import br.com.uniamerica.estacionamento.repository.CondutorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,52 +23,59 @@ public class CondutorService {
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarCadastroCondutor(Condutor condutor) {
 
-        // Verificar se o nome está informado
-        Assert.notNull(condutor.getNome(), "Nome do condutor não informado!");
-        Assert.hasText(condutor.getNome(),"Campo nome não preenchido");
+        /*Validar nome do condutor*/
 
-        // Verificar se o CPF is unique
+        Assert.notNull(condutor.getNome(), "Nome do condutor não informado!");
+        Assert.hasText(condutor.getNome(), "Campo nome não preenchido");
+
+        /*Validar o CPF do condutor*/
+
         final List<Condutor> condutorbyCPF = this.condutorRepository.findbyCPF(condutor.getCpf());
         Assert.isTrue(condutorbyCPF.isEmpty(), "CPF existe no banco de dados");
 
         // Verificar se o CPF está informado
         Assert.notNull(condutor.getCpf(), "CPF não informado!");
-        Assert.hasText(condutor.getCpf(),"Campo CPF não preenchido");
+        Assert.hasText(condutor.getCpf(), "Campo CPF não preenchido");
 
         // Verificar se o CPF está no padrão correto
         final String cpfFormat = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}";
         Assert.isTrue(condutor.getCpf().matches(cpfFormat), "CPF em formato inválido.");
 
+        /*Validar o telefone do condutor*/
+
         // Verificar se o telefone está válido
         final String telefoneFormat = "\\+55\\(\\d{2}\\)\\d{9}";
         Assert.isTrue(condutor.getTelefone().matches(telefoneFormat), "Telefone em formato inválido.");
-        Assert.hasText(condutor.getTelefone(),"Campo Telefone não preenchido");
-
+        Assert.hasText(condutor.getTelefone(), "Campo Telefone não preenchido");
     }
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarUpdateCondutor(Condutor condutor) {
 
-        // Verificar se os campos obrigatórios foram preenchidos
-        Assert.notNull(condutor.getNome(), "Nome do condutor não informado.");
-        Assert.notNull(condutor.getCpf(), "CPF do condutor não informado.");
-        Assert.notNull(condutor.getTelefone(), "Telefone do condutor não informado.");
+        /*Validar nome do condutor*/
 
-        // Verificar se o CPF informado e unique
+        Assert.notNull(condutor.getNome(), "Nome do condutor não informado.");
+        Assert.hasText(condutor.getNome(), "Campo nome não preenchido");
+
+        /*Validar o CPF do condutor*/
+
         final List<Condutor> condutorbyCPF = this.condutorRepository.findbyCPF(condutor.getCpf());
         Assert.isTrue(condutorbyCPF.isEmpty(), "CPF existe no banco de dados");
 
-        // Verificar se o CPF está no padrão correto
         final String cpfFormat = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}";
         Assert.isTrue(condutor.getCpf().matches(cpfFormat), "CPF em formato inválido.");
+
+        Assert.notNull(condutor.getCpf(), "CPF do condutor não informado.");
+        Assert.hasText(condutor.getCpf(), "Campo CPF não preenchido");
+
+        /*Validar o telefone do condutor*/
 
         // Verificar se o telefone está válido
         final String telefoneFormat = "\\+55\\(\\d{2}\\)\\d{9}";
         Assert.isTrue(condutor.getTelefone().matches(telefoneFormat), "Telefone em formato inválido.");
 
-        Assert.hasText(condutor.getTelefone(),"Campo Telefone não preenchido");
-        Assert.hasText(condutor.getCpf(),"Campo CPF não preenchido");
-        Assert.hasText(condutor.getNome(),"Campo nome não preenchido");
+        Assert.notNull(condutor.getTelefone(), "Telefone do condutor não informado.");
+        Assert.hasText(condutor.getTelefone(), "Campo Telefone não preenchido");
 
     }
 

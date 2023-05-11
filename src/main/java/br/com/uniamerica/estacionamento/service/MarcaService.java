@@ -30,6 +30,8 @@ public class MarcaService {
         List<Marca> marcasByNome = marcaRepository.findByNome(marca.getNome());
         Assert.isTrue(marcasByNome.isEmpty(), "Marca existe no banco de dados.");
 
+        Assert.hasText(marca.getNome(),"Campo nome não preenchido.");
+
     }
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)
@@ -40,6 +42,8 @@ public class MarcaService {
         // Verificar se o nome do marca já existe
         List<Marca> marcasByNome = marcaRepository.findByNome(marca.getNome());
         Assert.isTrue(marcasByNome.isEmpty(), "Nome da marca existe no banco de dados.");
+
+        Assert.hasText(marca.getNome(),"Campo nome não preenchido.");
 
     }
 

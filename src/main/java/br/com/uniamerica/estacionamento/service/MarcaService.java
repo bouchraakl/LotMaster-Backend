@@ -30,6 +30,8 @@ public class MarcaService {
         List<Marca> marcasByNome = marcaRepository.findByNome(marca.getNome());
         Assert.isTrue(marcasByNome.isEmpty(), "Marca existe no banco de dados.");
 
+        Assert.hasText(marca.getNome(),"Campo nome não preenchido.");
+
     }
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)
@@ -41,11 +43,14 @@ public class MarcaService {
         List<Marca> marcasByNome = marcaRepository.findByNome(marca.getNome());
         Assert.isTrue(marcasByNome.isEmpty(), "Nome da marca existe no banco de dados.");
 
+        Assert.hasText(marca.getNome(),"Campo nome não preenchido.");
+
     }
 
-    @Transactional(readOnly = true,rollbackFor = Exception.class)
-    public void validarDeleteMarca(Long id){
-        Assert.isTrue(marcaRepository.existsById(id), "ID marca não existe");
+    @Transactional(readOnly = true, rollbackFor = Exception.class)
+    public void validarDeleteMarca(Long id) {
+        Assert.isTrue(marcaRepository.existsById(id),
+                "ID marca não existe");
     }
 
 }

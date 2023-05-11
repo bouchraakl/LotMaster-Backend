@@ -26,13 +26,15 @@ public class CondutorService {
 
         // Verificar se o nome está informado
         Assert.notNull(condutor.getNome(), "Nome do condutor não informado!");
+        Assert.hasText(condutor.getNome(),"Campo nome não preenchido");
 
         // Verificar se o CPF is unique
         final List<Condutor> condutorbyCPF = this.condutorRepository.findbyCPF(condutor.getCpf());
-        Assert.isTrue(condutorbyCPF.isEmpty(),"CPF existe no banco de dados");
+        Assert.isTrue(condutorbyCPF.isEmpty(), "CPF existe no banco de dados");
 
         // Verificar se o CPF está informado
         Assert.notNull(condutor.getCpf(), "CPF não informado!");
+        Assert.hasText(condutor.getCpf(),"Campo CPF não preenchido");
 
         // Verificar se o CPF está no padrão correto
         final String cpfFormat = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}";
@@ -41,6 +43,7 @@ public class CondutorService {
         // Verificar se o telefone está válido
         final String telefoneFormat = "\\+55\\(\\d{2}\\)\\d{9}";
         Assert.isTrue(condutor.getTelefone().matches(telefoneFormat), "Telefone em formato inválido.");
+        Assert.hasText(condutor.getTelefone(),"Campo Telefone não preenchido");
 
     }
 
@@ -54,7 +57,7 @@ public class CondutorService {
 
         // Verificar se o CPF informado e unique
         final List<Condutor> condutorbyCPF = this.condutorRepository.findbyCPF(condutor.getCpf());
-        Assert.isTrue(condutorbyCPF.isEmpty(),"CPF existe no banco de dados");
+        Assert.isTrue(condutorbyCPF.isEmpty(), "CPF existe no banco de dados");
 
         // Verificar se o CPF está no padrão correto
         final String cpfFormat = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}";
@@ -63,10 +66,15 @@ public class CondutorService {
         // Verificar se o telefone está válido
         final String telefoneFormat = "\\+55\\(\\d{2}\\)\\d{9}";
         Assert.isTrue(condutor.getTelefone().matches(telefoneFormat), "Telefone em formato inválido.");
+
+        Assert.hasText(condutor.getTelefone(),"Campo Telefone não preenchido");
+        Assert.hasText(condutor.getCpf(),"Campo CPF não preenchido");
+        Assert.hasText(condutor.getNome(),"Campo nome não preenchido");
+
     }
 
-    @Transactional(readOnly = true,rollbackFor = Exception.class)
-    public void validarDeleteCondutor(Long id){
+    @Transactional(readOnly = true, rollbackFor = Exception.class)
+    public void validarDeleteCondutor(Long id) {
 
         Assert.isTrue(condutorRepository.existsById(id), "ID condutor não existe.");
 

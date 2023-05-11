@@ -14,6 +14,7 @@ import org.springframework.util.Assert;
 
 
 import java.time.Year;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -39,10 +40,13 @@ public class VeiculoService {
 
         Assert.notNull(veiculo.getCor(), "Cor do veículo não informada.");
 
+
         // Verificar se a placa não está vazia e é válida
 
         final List<Veiculo> veiculoByPlaca = this.veiculoRepository.findByPlaca(veiculo.getPlaca());
         Assert.isTrue(veiculoByPlaca.isEmpty(), "Placa existe no banco de dados.");
+
+        Assert.hasText(veiculo.getPlaca(),"Campo placa não preenchido");
 
         Assert.notNull(veiculo.getPlaca(), "Placa não informada.");
 
@@ -50,9 +54,12 @@ public class VeiculoService {
         Assert.isTrue(veiculo.getPlaca().matches(placaFormat), "Placa em formato inválido.");
 
         Assert.notNull(veiculo.getTipo(), "Tipo do veículo não informado.");
+        Assert.isTrue(Arrays.asList(Tipo.values()).contains(veiculo.getTipo()),
+                "O tipo do veiculo não é válido");
 
         // Verificar se o modelo do veículo não é nulo.
         Assert.notNull(veiculo.getModelo(), "Objeto modelo não informado.");
+        Assert.isTrue(veiculo.getModelo().isAtivo(),"Modelo inativo.");
 
         // Verificar se o ID do modelo do veículo não é nulo.
         Assert.notNull(veiculo.getModelo().getId(), "ID modelo não informado.");
@@ -64,15 +71,12 @@ public class VeiculoService {
         /* Verificar se o ID do veiculo não é nulo*/
         Assert.notNull(veiculo.getId(), "Veículo não existe no banco de dados.");
 
-        // Verificar se a placa não está vazia e é válida
-
-//        final List<Veiculo> veiculoByPlaca = this.veiculoRepository.findByPlaca(veiculo.getPlaca());
-//        Assert.isTrue(veiculoByPlaca.isEmpty(), "Placa existe no banco de dados.");
-
         Assert.notNull(veiculo.getPlaca(), "Placa não informada.");
 
         final String placaFormat = "^[A-Z]{3}\\d{4}$";
         Assert.isTrue(veiculo.getPlaca().matches(placaFormat), "Placa em formato inválido.");
+
+        Assert.hasText(veiculo.getPlaca(),"Campo placa não preenchido");
 
         // Verificar se o modelo do veículo não é nulo.
         Assert.notNull(veiculo.getModelo(), "Objeto modelo não informado.");
@@ -80,6 +84,14 @@ public class VeiculoService {
         Assert.notNull(veiculo.getModelo().getId(), "ID modelo não informado.");
         Assert.isTrue(this.modeloRepository.existsById(veiculo.getModelo().getId()),
                 "Modelo não existe no banco de dados");
+
+        Assert.isTrue(veiculo.getModelo().isAtivo(),"Modelo inativo.");
+
+        Assert.notNull(veiculo.getCor(), "Cor do veículo não informada.");
+
+
+        Assert.notNull(veiculo.getTipo(), "Tipo do veículo não informado.");
+
 
         Range<Integer> rangeAno = Range.closed(MIN_ALLOWED_YEAR, currentYear);
         Assert.isTrue(rangeAno.contains(veiculo.getAno()), "Ano do veículo está fora do range permitido.");

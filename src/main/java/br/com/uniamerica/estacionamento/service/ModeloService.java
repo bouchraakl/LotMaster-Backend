@@ -34,11 +34,15 @@ public class ModeloService {
         Assert.notNull(modelo.getMarca(), "Objeto marca não informado!");
 
         // Verificar se o ID da marca do modelo não é nulo.
-        Assert.notNull(modelo.getMarca().getId(),"ID marca não informado.");
+        Assert.notNull(modelo.getMarca().getId(), "ID marca não informado.");
 
         // Verificar se o nome do modelo já existe
         final List<Modelo> modelosByNome = this.modeloRepository.findByNome(modelo.getNome());
         Assert.isTrue(modelosByNome.isEmpty(), "Nome do modelo existe no banco de dados");
+
+        Assert.hasText(modelo.getNome(),"Campo nome não preenchido.");
+
+        Assert.isTrue(modelo.getMarca().isAtivo(),"Marca inativa.");
 
     }
 
@@ -62,10 +66,13 @@ public class ModeloService {
         // Verificar se os campos obrigatórios foram preenchidos
         Assert.notNull(modelo.getNome(), "Nome do modelo não informado.");
         Assert.notNull(modelo.getCadastro(), "Data de cadastro do modelo não informada.");
+
+        Assert.hasText(modelo.getNome(),"Campo nome não preenchido.");
+        Assert.isTrue(modelo.getMarca().isAtivo(),"Marca inativa.");
     }
 
-    @Transactional(readOnly = true,rollbackFor = Exception.class)
-    public void validarDeleteModelo(Long id){
+    @Transactional(readOnly = true, rollbackFor = Exception.class)
+    public void validarDeleteModelo(Long id) {
         Assert.isTrue(modeloRepository.existsById(id), "ID do modelo não existe");
     }
 

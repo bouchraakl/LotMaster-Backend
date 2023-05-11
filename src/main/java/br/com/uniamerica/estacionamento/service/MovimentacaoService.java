@@ -5,7 +5,7 @@ package br.com.uniamerica.estacionamento.service;
 
 import br.com.uniamerica.estacionamento.entity.Configuracao;
 import br.com.uniamerica.estacionamento.entity.Movimentacao;
-import br.com.uniamerica.estacionamento.entity.Tipo;
+
 import br.com.uniamerica.estacionamento.repository.CondutorRepository;
 import br.com.uniamerica.estacionamento.repository.ConfiguracaoRepository;
 import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
@@ -14,18 +14,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
-import org.w3c.dom.ranges.Range;
-
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
+
 
 //------------------------------------------------
 @Service
 public class MovimentacaoService {
-    private static final LocalTime OPENING_TIME = LocalTime.parse("08:00:00");
-    private static final LocalTime CLOSING_TIME = LocalTime.parse("18:00:00");
-    private static final LocalTime CURRENT_TIME = LocalTime.now().withNano(0);
+
     @Autowired
     private MovimentacaoRepository movimentacaoRepository;
     @Autowired
@@ -35,11 +30,15 @@ public class MovimentacaoService {
     @Autowired
     private ConfiguracaoRepository configuracaoRepository;
 
-
-
+    private static final LocalTime OPENING_TIME = LocalTime.parse("08:00:00");
+    private static final LocalTime CLOSING_TIME = LocalTime.parse("18:00:00");
+    private static final LocalTime CURRENT_TIME = LocalTime.now().withNano(0);
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarCadastroMovimentacao(Movimentacao movimentacao) {
+
+        Assert.isTrue(movimentacao.getVeiculo().isAtivo(),"Veiculo inativo.");
+        Assert.isTrue(movimentacao.getCondutor().isAtivo(),"Condutor inativo.");
 
         Assert.notNull(movimentacao.getVeiculo(), "Objeto veículo não informado.");
         Assert.isTrue(this.veiculoRepository.existsById(movimentacao.getVeiculo().getId()),
@@ -56,11 +55,13 @@ public class MovimentacaoService {
                 "A movimentação está fora do horário de funcionamento do estacionamento.");
 
 
-
     }
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarUpdateMovimentacao(Movimentacao movimentacao) {
+
+        Assert.isTrue(movimentacao.getVeiculo().isAtivo(),"Veiculo inativo.");
+        Assert.isTrue(movimentacao.getCondutor().isAtivo(),"Condutor inativo.");
 
         // Verificar se o ID da movimentacao não é nula e valido
         Assert.notNull(movimentacao.getId(), "ID movimentacao não informado.");
@@ -83,7 +84,6 @@ public class MovimentacaoService {
         // Verificar se a movimentação está dentro do horário de funcionamento do estacionamento
         Assert.isTrue(!CURRENT_TIME.isBefore(OPENING_TIME) || CURRENT_TIME.isAfter(CLOSING_TIME),
                 "A movimentação está fora do horário de funcionamento do estacionamento.");
-
 
 
     }

@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 /*
@@ -83,10 +85,23 @@ public class MovimentacaoService {
         Assert.notNull(movimentacao.getCondutor().getId(),
                 "O ID do condutor em movimentação não pode ser nulo.");
 
+        movimentacao.setEntrada(LocalDateTime.now());
+
         // Verifica se a movimentação está dentro do horário de funcionamento do estacionamento
         Assert.isTrue(!CURRENT_TIME.isBefore(OPENING_TIME) || CURRENT_TIME.isAfter(CLOSING_TIME),
                 "Erro: Horário inválido. O horário atual está fora do intervalo de funcionamento permitido. " +
                         "Horário de funcionamento: das " + OPENING_TIME + " às " + CLOSING_TIME + ".");
+
+        if (movimentacao.getSaida() != null) {
+            LocalDateTime entrada = movimentacao.getEntrada();
+            LocalDateTime saida = movimentacao.getSaida();
+            Duration duracao = Duration.between(entrada.toLocalTime(), saida.toLocalTime());
+            LocalTime duracaoLocalTime = duracao.toMinutes() >= 0 ? LocalTime.MIDNIGHT.plus(duracao) : LocalTime.MIDNIGHT.minus(duracao);
+            movimentacao.setTempo(duracaoLocalTime);
+        }else{
+            movimentacao.setTempo(LocalTime.MIDNIGHT);
+        }
+
 
     }
 
@@ -149,6 +164,14 @@ public class MovimentacaoService {
         Assert.isTrue(!CURRENT_TIME.isBefore(OPENING_TIME) || CURRENT_TIME.isAfter(CLOSING_TIME),
                 "Erro: Horário inválido. O horário atual está fora do intervalo de funcionamento permitido. " +
                         "Horário de funcionamento: das " + OPENING_TIME + " às " + CLOSING_TIME + ".");
+
+        if (movimentacao.getSaida() != null) {
+            LocalDateTime entrada = movimentacao.getEntrada();
+            LocalDateTime saida = movimentacao.getSaida();
+            Duration duracao = Duration.between(entrada.toLocalTime(), saida.toLocalTime());
+            LocalTime duracaoLocalTime = duracao.toMinutes() >= 0 ? LocalTime.MIDNIGHT.plus(duracao) : LocalTime.MIDNIGHT.minus(duracao);
+            movimentacao.setTempo(duracaoLocalTime);
+        }
 
     }
 

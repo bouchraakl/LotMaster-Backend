@@ -18,8 +18,8 @@ import java.util.List;
 public interface ModeloRepository extends JpaRepository<Modelo, Long> {
     public List<Modelo> findByNome(final String nome);
 
-    @Query(value = "SELECT * FROM modelos WHERE ativo = :true", nativeQuery = true)
-    public List<Modelo> findAllByActive(@Param("true") final boolean ativo);
+    @Query("from Modelo where ativo = true")
+    public List<Modelo> findAllAtivo();
 
     @Query(value = "SELECT * FROM modelos WHERE marca_id = :id", nativeQuery = true)
     public List<Modelo> findByMarcaId(@Param("id") Long id);

@@ -47,7 +47,7 @@ public class ModeloController {
     /* -------------------get by ativos--------------------------- */
     @GetMapping("/ativos")
     public ResponseEntity<?> findModeloAtivos() {
-        return ResponseEntity.ok(this.modeloRepository.findAllByActive(true));
+        return ResponseEntity.ok(this.modeloRepository.findAllAtivo());
     }
 
     /* -------------------post--------------------------- */

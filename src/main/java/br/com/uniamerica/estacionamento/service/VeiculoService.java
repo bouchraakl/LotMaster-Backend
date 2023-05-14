@@ -66,7 +66,7 @@ public class VeiculoService {
         // Verifica se o objeto modelo foi informado
         Assert.notNull(veiculo.getModelo(),
                 "O objeto modelo não foi informado. " +
-                        "Por favor, preencha todas as informações obrigatórias para prosseguir com a movimentação.");
+                        "Por favor, preencha todas as informações obrigatórias para prosseguir.");
 
         // Verifica se o modelo está ativo
         Assert.isTrue(veiculo.getModelo().isAtivo(),
@@ -75,6 +75,10 @@ public class VeiculoService {
 
         // Verifica se o ID do modelo foi informado
         Assert.notNull(veiculo.getModelo().getId(), "O ID do modelo em veiculo não pode ser nulo.");
+
+        // Verificar se o modelo com o ID informado existe no banco de dados
+        Assert.isTrue(this.modeloRepository.existsById(veiculo.getModelo().getId()),
+                "Modelo não existe no banco de dados");
 
         // Define o range permitido para o ano do veículo
         Range<Integer> rangeAno = Range.closed(MIN_ALLOWED_YEAR, currentYear);
@@ -102,44 +106,70 @@ public class VeiculoService {
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarUpdateVeiculo(Veiculo veiculo) {
 
+        // Verifica se a data de cadastro foi informada
+        Assert.notNull(veiculo.getCadastro(),
+                "O cadastro do veiculo não pode ser nulo. " +
+                        "Verifique se todas as informações foram preenchidas corretamente.");
+
         // Verificar se o ID do veiculo não é nulo
         Assert.notNull(veiculo.getId(),
                 "O ID do veiculo fornecido é nulo. " +
                         "Certifique-se de que o objeto do veiculo tenha um ID válido antes de realizar essa operação.");
 
-        // Verificar se a placa foi informada
-        Assert.notNull(veiculo.getPlaca(), "Placa não informada.");
+        // Verifica se ID do veiculo existe no banco de dados
+        Assert.isTrue(veiculoRepository.existsById(veiculo.getId()),
+                "O ID do veiculo especificado não foi encontrado na base de dados. " +
+                        "Por favor, verifique se o ID está correto e tente novamente.");
 
-        // Verificar se a placa está em formato válido
+        // Verifica se a placa foi informada
+        Assert.notNull(veiculo.getPlaca(), "A placa do veiculo não pode ser nula.");
+
+        // Verifica se a placa já existe no banco de dados
+        final List<Veiculo> veiculoByPlaca = this.veiculoRepository.findByPlaca(veiculo.getPlaca());
+        Assert.isTrue(veiculoByPlaca.isEmpty(),
+                "Já existe um veículo cadastrado com a placa " + veiculo.getPlaca() +
+                        ". Verifique se os dados estão corretos e tente novamente.");
+
+        // Verifica se a placa está no formato correto (três letras maiúsculas seguidas de quatro números)
         final String placaFormat = "^[A-Z]{3}\\d{4}$";
-        Assert.isTrue(veiculo.getPlaca().matches(placaFormat), "Placa em formato inválido.");
+        Assert.isTrue(veiculo.getPlaca().matches(placaFormat),
+                "A placa do veículo deve seguir o formato AAA9999" +
+                        ". Verifique a placa informada e tente novamente.");
 
         // Verifica se o campo placa foi preenchido
-        Assert.hasText(veiculo.getPlaca(), "Campo placa não preenchido");
+        Assert.hasText(veiculo.getPlaca(), "A placa do veiculo não pode ser vazia.");
 
-        // Verificar se o objeto modelo do veículo foi informado
-        Assert.notNull(veiculo.getModelo(), "Objeto modelo não informado.");
+        // Verifica se o objeto modelo foi informado
+        Assert.notNull(veiculo.getModelo(),
+                "O objeto modelo não foi informado. " +
+                        "Por favor, preencha todas as informações obrigatórias para prosseguir.");
 
         // Verificar se o ID do modelo do veículo foi informado
-        Assert.notNull(veiculo.getModelo().getId(), "ID modelo não informado.");
+        Assert.notNull(veiculo.getModelo().getId(), "O ID do modelo em veiculo não pode ser nulo.");
 
         // Verificar se o modelo com o ID informado existe no banco de dados
-        Assert.isTrue(this.modeloRepository.existsById(veiculo.getModelo().getId()), "Modelo não existe no banco de dados");
+        Assert.isTrue(this.modeloRepository.existsById(veiculo.getModelo().getId()),
+                "Modelo não existe no banco de dados");
 
         // Verificar se o modelo do veículo está ativo
         Assert.isTrue(veiculo.getModelo().isAtivo(),
                 "O modelo associado a esse veiculo está inativo. " +
                 "Por favor, verifique o status do modelo e tente novamente.");
 
-        // Verificar se o ano do veículo está dentro do range permitido
+        // Define o range permitido para o ano do veículo
         Range<Integer> rangeAno = Range.closed(MIN_ALLOWED_YEAR, currentYear);
-        Assert.isTrue(rangeAno.contains(veiculo.getAno()), "Ano do veículo está fora do range permitido.");
+
+        // Verifica se o ano do veículo está dentro do range permitido
+        Assert.isTrue(rangeAno.contains(veiculo.getAno()),
+                "O ano do veículo deve estar dentro do intervalo permitido " +
+                        "(" + MIN_ALLOWED_YEAR + "-" + currentYear + "), " +
+                        "mas o valor fornecido foi " + veiculo.getAno() + ".");
 
         // Verificar se a cor do veículo foi informada
-        Assert.notNull(veiculo.getCor(), "Cor do veículo não informada.");
+        Assert.notNull(veiculo.getCor(), "A cor do veículo não pode ser nula.");
 
         // Verificar se o tipo do veículo foi informado
-        Assert.notNull(veiculo.getTipo(), "Tipo do veículo não informado.");
+        Assert.notNull(veiculo.getTipo(), "O tipo do veículo não pode ser nulo.");
 
     }
 

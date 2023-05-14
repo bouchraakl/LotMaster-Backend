@@ -47,12 +47,21 @@ public class ModeloService {
                 "Um modelo já está registrado com o nome informado. " +
                         "Por favor, verifique os dados informados e tente novamente.");
 
+        // Verifica se o nome do modelo contém apenas letras, espaços e hífens
+        final String nomeFormat = "^[a-zA-ZÀ-ÿ0-9\\\\s\\\\-]+$";
+        Assert.isTrue(modelo.getNome().matches(nomeFormat),
+                "O nome do modelo deve conter apenas letras, números, espaços e hífens. " +
+                        "Por favor, verifique e tente novamente.");
+
+
         // Verificar se o objeto marca foi informado
         Assert.notNull(modelo.getMarca(), "O objeto marca não foi informado." +
                 " Por favor, preencha todas as informações obrigatórias para prosseguir com a movimentação.");
 
-        // Verificar se o ID da marca foi informado
+        // Verificar se o ID da marca foi informado e se ele existe no banco de dados
         Assert.notNull(modelo.getMarca().getId(), "O ID da marca em modelo não pode ser nulo.");
+        Assert.isTrue(marcaRepository.existsById(modelo.getMarca().getId()),
+                "Não foi possível salvar o modelo, pois a marca associada não foi encontrada.");
 
         // Verificar se a marca está ativa
         Assert.isTrue(modelo.getMarca().isAtivo(),
@@ -75,6 +84,16 @@ public class ModeloService {
                 "O cadastro do veículo não pode ser nulo. " +
                         "Verifique se todas as informações foram preenchidas corretamente.");
 
+        // Verificar se o modelo existe no banco de dados
+        Assert.notNull(modelo.getId(),
+                "O ID do modelo fornecido é nulo. " +
+                        "Certifique-se de que o objeto do modelo tenha um ID válido antes de realizar essa operação.");
+
+        // Verifica se ID do modelo existe no banco de dados
+        Assert.isTrue(modeloRepository.existsById(modelo.getId()),
+                "O ID do modelo especificado não foi encontrado na base de dados. " +
+                        "Por favor, verifique se o ID está correto e tente novamente.");
+
         // Verificar se o nome do modelo foi informado
         Assert.notNull(modelo.getNome(), "O nome do modelo não pode ser nulo.");
 
@@ -86,6 +105,12 @@ public class ModeloService {
         Assert.isTrue(modelosByNome.isEmpty(),
                 "Um modelo já está registrado com o nome informado. " +
                         "Por favor, verifique os dados informados e tente novamente.");
+
+        // Verifica se o nome do modelo contém apenas letras, espaços e hífens
+        final String nomeFormat = "^[a-zA-ZÀ-ÿ0-9\\\\s\\\\-]+$";
+        Assert.isTrue(modelo.getNome().matches(nomeFormat),
+                "O nome do modelo deve conter apenas letras, números, espaços e hífens. " +
+                        "Por favor, verifique e tente novamente.");
 
         // Verificar se o objeto marca foi informado
         Assert.notNull(modelo.getMarca(),

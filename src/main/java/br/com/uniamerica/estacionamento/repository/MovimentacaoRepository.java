@@ -12,15 +12,15 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 
+import java.time.LocalTime;
 import java.util.List;
 
 /* ----------------------------------------------------- */
 public interface MovimentacaoRepository extends JpaRepository<Movimentacao, Long> {
     public List<Movimentacao> findByVeiculo(final Veiculo veiculo);
 
-    @Query(value = "SELECT * FROM movimentacoes mov WHERE mov.entrada IS NOT NULL AND mov.saida IS NULL",
-            nativeQuery = true)
-    public List<Movimentacao> findByMovAbertas();
+    @Query("from Movimentacao where saida = null")
+    public List<Movimentacao> findAllAbertas();
 
     @Query(value = "SELECT * FROM movimentacoes WHERE condutor_id = :id", nativeQuery = true)
     public List<Movimentacao> findByCondutorId(@Param("id") Long id);
@@ -29,8 +29,10 @@ public interface MovimentacaoRepository extends JpaRepository<Movimentacao, Long
     @Query(value = "SELECT * FROM movimentacoes WHERE veiculo_id = :id", nativeQuery = true)
     public List<Movimentacao> findByVeiculoId(@Param("id") Long id);
 
-    @Query("SELECT COUNT(m) FROM Movimentacao m JOIN m.veiculo v WHERE v.tipo = :tipo AND m.saida IS NULL")
-    Long countByVeiculoTipoAndSaidaIsNull(@Param("tipo") Tipo tipo);
+    @Query("SELECT SUM(m.tempo) FROM Movimentacao m WHERE m.condutor.id = :id")
+    LocalTime sumByTempo(@Param("id") Long id);
+
+
 
 
 

@@ -43,7 +43,7 @@ public class MarcaController {
     /* -------------------get by ativo--------------------------- */
     @GetMapping("/ativos")
     public ResponseEntity<?> findMarcasAtivas() {
-        return ResponseEntity.ok(this.marcaRepository.findAllByActive(true));
+        return ResponseEntity.ok(this.marcaRepository.findAllAtivo());
     }
 
     /* -------------------post--------------------------- */

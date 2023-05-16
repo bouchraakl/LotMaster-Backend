@@ -44,7 +44,7 @@ public class Movimentacao extends AbstractEntity {
 
     @Getter
     @Setter
-    @Column(name = "tempo")
+    @Column(name = "tempo",nullable = false)
     private LocalTime tempo;
 
     @Getter

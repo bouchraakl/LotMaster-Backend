@@ -44,7 +44,7 @@ public class VeiculoController {
     /* -------------------get by ativo--------------------------- */
     @GetMapping("/ativos")
     public ResponseEntity<?> findVeiculosAtivas() {
-        List<Veiculo> veiculoList = this.veiculoRepository.findAllByActive(true);
+        List<Veiculo> veiculoList = this.veiculoRepository.findAllAtivo();
         if (veiculoList == null || veiculoList.isEmpty()) {
             return ResponseEntity.badRequest().body("Não tem nem um veiculo ativo");
         } else {

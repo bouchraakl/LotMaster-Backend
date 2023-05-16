@@ -38,7 +38,7 @@ public class MovimentacaoController {
     /* -------------------get by abertos--------------------------- */
     @GetMapping("/abertas")
     public ResponseEntity<?> findMovimentacoesAbertas() {
-        return ResponseEntity.ok(this.movimentacaoRepository.findByMovAbertas());
+        return ResponseEntity.ok(this.movimentacaoRepository.findAllAbertas());
     }
 
     /* -------------------post--------------------------- */

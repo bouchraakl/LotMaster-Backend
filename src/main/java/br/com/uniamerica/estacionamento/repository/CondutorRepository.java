@@ -17,7 +17,8 @@ public interface CondutorRepository extends JpaRepository<Condutor, Long> {
     @Query("from Condutor where cpf = :cpf")
     public List<Condutor> findbyCPF(@Param("cpf") final String cpf);
 
-    @Query(value = "SELECT * FROM condutores WHERE ativo like :true", nativeQuery = true)
-    public List<Condutor> findAllByActive(@Param("true") final boolean ativo);
+    @Query("from Condutor where ativo = true")
+    public List<Condutor> findAllAtivo();
+
 
 }

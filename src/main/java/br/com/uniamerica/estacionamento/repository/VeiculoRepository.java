@@ -16,8 +16,8 @@ public interface VeiculoRepository extends JpaRepository<Veiculo, Long> {
     @Query("FROM Veiculo WHERE placa = :placa")
     public List<Veiculo> findByPlaca(@Param("placa") final String placa);
 
-    @Query(value = "SELECT * FROM veiculos WHERE ativo :true", nativeQuery = true)
-    public List<Veiculo> findAllByActive(@Param("true") final boolean ativo);
+    @Query("from Veiculo where ativo = true")
+    public List<Veiculo> findAllAtivo();
 
     @Query(value = "FROM veiculos WHERE modelo.id = :id", nativeQuery = true)
     public List<Movimentacao> findByModeloId(@Param("id") final Long id);

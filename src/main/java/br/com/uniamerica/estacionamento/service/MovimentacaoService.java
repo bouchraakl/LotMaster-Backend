@@ -175,8 +175,8 @@ public class MovimentacaoService {
 
         Configuracao configuracao = obterConfiguracao();
 
-         LocalTime OPENING_TIME = configuracao.getInicioExpediente();
-         LocalTime CLOSING_TIME = configuracao.getFimExpediente();
+        LocalTime OPENING_TIME = configuracao.getInicioExpediente();
+        LocalTime CLOSING_TIME = configuracao.getFimExpediente();
 
         // Obter os valores de entrada, saída e valorMinutoMulta a partir dos objetos movimentacao e obterConfiguracao
         LocalDateTime entrada = movimentacao.getEntrada();
@@ -209,6 +209,11 @@ public class MovimentacaoService {
         } else {
             configurarValoresPadrao(movimentacao);
         }
+
+        Condutor condutor = condutorRepository.findById(movimentacao.getCondutor().getId()).orElse(null);
+        assert condutor != null;
+        condutor.setTempoPagoHoras(condutor.getTempoPagoHoras() + movimentacao.getTempo().getHour());
+        condutor.setTempoPagoMinutos(condutor.getTempoPagoMinutos() + movimentacao.getTempo().getMinute());
 
     }
 

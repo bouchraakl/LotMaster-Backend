@@ -212,8 +212,16 @@ public class MovimentacaoService {
 
         Condutor condutor = condutorRepository.findById(movimentacao.getCondutor().getId()).orElse(null);
         assert condutor != null;
+
+        // Set tempoPagoHoras e tempoPagoMinutos em condutor
         condutor.setTempoPagoHoras(condutor.getTempoPagoHoras() + movimentacao.getTempo().getHour());
         condutor.setTempoPagoMinutos(condutor.getTempoPagoMinutos() + movimentacao.getTempo().getMinute());
+
+        while(condutor.getTempoPagoMinutos() > 60){
+            condutor.setTempoPagoMinutos(condutor.getTempoPagoMinutos() - 60);
+        }
+
+
 
     }
 

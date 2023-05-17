@@ -195,7 +195,7 @@ public class MovimentacaoService {
         BigDecimal valorMinutoMulta = configuracao.getValorMinutoMulta();
 
         // Calcula a duração entre a entrada e a saída
-        Duration duracao = Duration.between(entrada,saida);
+        Duration duracao = Duration.between(entrada, saida);
 
         long totalSecoundsOfDuration = duracao.getSeconds();
         long hours = totalSecoundsOfDuration / 3600;
@@ -206,10 +206,10 @@ public class MovimentacaoService {
         movimentacao.setTempoMinutos((int) minutes);
 
         // Calcular tempoMulta e valorTempoMulta
-        calculateMulta(movimentacao,entrada,saida,OPENING_TIME,CLOSING_TIME);
+        calculateMulta(movimentacao, entrada, saida, OPENING_TIME, CLOSING_TIME);
 
         // Setting tempos pagos e de desconto para o condutor associado
-        valoresCondutor(movimentacao,movimentacao.getTempoHoras(),movimentacao.getTempoMinutos());
+        valoresCondutor(movimentacao, movimentacao.getTempoHoras(), movimentacao.getTempoMinutos());
 
     }
 
@@ -235,7 +235,7 @@ public class MovimentacaoService {
         condutor.setTempoPagoHoras(condutor.getTempoPagoHoras() + extraHours);
 
         // Management for all descount operations
-        manageDesconto(movimentacao,condutor.getTempoPagoHoras(),condutor.getTempoPagoMinutos());
+        manageDesconto(movimentacao, condutor.getTempoPagoHoras(), condutor.getTempoPagoMinutos());
 
     }
 
@@ -246,26 +246,41 @@ public class MovimentacaoService {
                                 LocalTime closingTime) {
 
 
-        long totalMinutes = Duration.between(entrada,saida).toMinutes();
+        long totalMinutes = Duration.between(entrada, saida).toMinutes();
 
-        long openHoursinMinutes = Duration.between(openingTime,closingTime).toMinutes();
+        long openHoursMinutes = Duration.between(openingTime, closingTime).toMinutes();
 
         int multaMinutes = 0;
 
-        if (LocalTime.from(saida).isAfter(closingTime)){
-            multaMinutes += Duration.between(closingTime,saida).toMinutes();
+        LocalTime tempoMulta = null;
+
+        if (LocalTime.from(saida).isAfter(closingTime)
+                && LocalDate.from(saida).isEqual(LocalDate.from(entrada))) {
+
+            tempoMulta = LocalTime.from(saida).minusHours(closingTime.getHour())
+                    .minusMinutes(closingTime.getMinute())
+                    .minusSeconds(closingTime.getSecond())
+                    .minusNanos(closingTime.getNano());
+
+        } else if (LocalTime.from(saida).isAfter(closingTime)
+                && LocalDate.from(saida).isAfter(LocalDate.from(entrada))) {
+
+            multaMinutes += Duration.between(closingTime, saida).toMinutes();
+
+            int diasEstacionados = Math.toIntExact(Duration.between(LocalDate.from(entrada).atTime(openingTime)
+                            , LocalDate.from(saida).atTime(closingTime))
+                    .toDays()) + 1;
+
+            multaMinutes += totalMinutes - (diasEstacionados * openHoursMinutes);
+
+            int hours = multaMinutes / 60;
+            int minutes = multaMinutes % 60;
+
+            tempoMulta = LocalTime.of(hours, minutes);
+        } else {
+            movimentacao.setTempoMulta(LocalTime.MIDNIGHT);
         }
 
-        int diasEstacionados = Math.toIntExact(Duration.between(LocalDate.from(entrada).atTime(openingTime)
-                        ,LocalDate.from(saida).atTime(closingTime))
-                .toDays()) +1;
-
-        multaMinutes += (diasEstacionados * openHoursinMinutes) - totalMinutes;
-
-        int hours = multaMinutes /60;
-        int minutes = multaMinutes % 60;
-
-        LocalTime tempoMulta = LocalTime.of(hours, minutes);
         movimentacao.setTempoMulta(tempoMulta);
 
         movimentacao.setValorMulta(BigDecimal.valueOf(tempoMulta.getHour())
@@ -274,7 +289,6 @@ public class MovimentacaoService {
     }
 
     private void manageDesconto(Movimentacao movimentacao, int tempoPagoHoras, int tempoPagoMinutos) {
-
 
 
     }

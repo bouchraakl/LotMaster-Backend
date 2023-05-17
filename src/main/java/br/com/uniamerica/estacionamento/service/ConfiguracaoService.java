@@ -30,9 +30,15 @@ public class ConfiguracaoService {
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarUpdateConfiguracao(Configuracao configuracao) {
 
-        /*Verifica se a configuracao existe */
-        Configuracao configuracaoBanco = this.configuracaoRepository.findById(configuracao.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Configuração não existe!"));
+        // Verificar se a configuracao existe no banco de dados
+        Assert.notNull(configuracao.getId(),
+                "O ID da configuracao fornecido é nulo. " +
+                        "Certifique-se de que o objeto da configuracao tenha um ID válido antes de realizar essa operação.");
+
+        // Verifica se ID da configuracao existe no banco de dados
+        Assert.isTrue(configuracaoRepository.existsById(configuracao.getId()),
+                "O ID da configuracao especificadoa não foi encontrado na base de dados. " +
+                        "Por favor, verifique se o ID está correto e tente novamente.");
 
 
         Assert.notNull(configuracao.getValorHora(), "Valor hora não informada!");

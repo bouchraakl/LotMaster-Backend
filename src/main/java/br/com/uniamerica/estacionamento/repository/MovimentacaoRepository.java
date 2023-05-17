@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 
+import java.time.Duration;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -28,12 +29,6 @@ public interface MovimentacaoRepository extends JpaRepository<Movimentacao, Long
 
     @Query(value = "SELECT * FROM movimentacoes WHERE veiculo_id = :id", nativeQuery = true)
     public List<Movimentacao> findByVeiculoId(@Param("id") Long id);
-
-    @Query("SELECT SUM(m.tempo) FROM Movimentacao m WHERE m.condutor.id = :id")
-    LocalTime sumByTempo(@Param("id") Long id);
-
-
-
 
 
 }

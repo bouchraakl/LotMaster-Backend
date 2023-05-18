@@ -269,6 +269,12 @@ public class MovimentacaoService {
 
         movimentacao.setTempoMultaHoras(tempoMultaHoras);
         movimentacao.setTempoMultaMinutes(tempoMultaMinutes);
+
+        BigDecimal totalMulta = (new BigDecimal(movimentacao.getTempoMultaHoras())
+                .multiply(movimentacao.getValorHoraMulta()).add(new BigDecimal(movimentacao.getTempoMultaMinutes()).multiply(movimentacao.getValorHoraMulta()).divide(new BigDecimal(60))));
+
+        movimentacao.setValorMulta(totalMulta);
+
     }
 
     private void manageDesconto(Movimentacao movimentacao) {

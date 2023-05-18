@@ -8,18 +8,14 @@ import br.com.uniamerica.estacionamento.repository.CondutorRepository;
 import br.com.uniamerica.estacionamento.repository.ConfiguracaoRepository;
 import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
 import br.com.uniamerica.estacionamento.repository.VeiculoRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
@@ -186,7 +182,7 @@ public class MovimentacaoService {
 
         Configuracao configuracao = obterConfiguracao();
 
-        // Defenindo horário de funcionamento do estacionamento
+        // Definindo horário de funcionamento do estacionamento
         LocalTime OPENING_TIME = configuracao.getInicioExpediente();
         LocalTime CLOSING_TIME = configuracao.getFimExpediente();
 
@@ -208,95 +204,102 @@ public class MovimentacaoService {
         // Calcular tempoMulta e valorTempoMulta
         calculateMulta(movimentacao, entrada, saida, OPENING_TIME, CLOSING_TIME);
 
-        // Setting tempos pagos e de desconto para o condutor associado
-        valoresCondutor(movimentacao, movimentacao.getTempoHoras(), movimentacao.getTempoMinutos());
+        // Configurar tempos pagos e de desconto para o condutor associado
+        valoresCondutor(movimentacao);
 
+        // Gerenciar todas as operações de desconto
+        manageDesconto(movimentacao);
     }
 
-    private void valoresCondutor(Movimentacao movimentacao, int tempoHoras, int tempoMinutos) {
-
+    private void valoresCondutor(Movimentacao movimentacao) {
+        // Obter o condutor da movimentação
         Condutor condutor = condutorRepository.findById(movimentacao.getCondutor().getId()).orElse(null);
         assert condutor != null;
 
-        // Set tempoPagoHoras e tempoPagoMinutos em condutor
-
+        // Adicionar horas e minutos pagos ao condutor
         int hoursToAdd = movimentacao.getTempoHoras();
         int minutesToAdd = movimentacao.getTempoMinutos() % 60;
 
         condutor.setTempoPagoHoras(condutor.getTempoPagoHoras() + hoursToAdd);
         condutor.setTempoPagoMinutos(condutor.getTempoPagoMinutos() + minutesToAdd);
 
+        // Verificar se os minutos pagos ultrapassaram 60 minutos
         condutor.setTempoPagoHoras(condutor.getTempoPagoHoras() + condutor.getTempoPagoMinutos() / 60);
         condutor.setTempoPagoMinutos(condutor.getTempoPagoMinutos() % 60);
 
-        // Verifica se os minutos pagos ultrapassaram 60 minutos
+        // Verificar se os minutos pagos ultrapassaram 60 minutos novamente após a adição
         int extraHours = condutor.getTempoPagoMinutos() / 60;
         condutor.setTempoPagoMinutos(condutor.getTempoPagoMinutos() % 60);
         condutor.setTempoPagoHoras(condutor.getTempoPagoHoras() + extraHours);
-
-        // Management for all descount operations
-        manageDesconto(movimentacao, condutor.getTempoPagoHoras(), condutor.getTempoPagoMinutos());
-
     }
 
     private void calculateMulta(Movimentacao movimentacao,
                                 LocalDateTime entrada,
                                 LocalDateTime saida,
-                                LocalTime openingTime,
-                                LocalTime closingTime) {
+                                LocalTime inicioExpediente,
+                                LocalTime fimExpediente) {
 
+        int tempoMultaMinutos = 0;
 
-        long totalMinutes = Duration.between(entrada, saida).toMinutes();
+        int ano = saida.getYear() - entrada.getYear();
+        int dias = saida.getDayOfYear() - entrada.getDayOfYear();
 
-        long openHoursMinutes = Duration.between(openingTime, closingTime).toMinutes();
-
-        int multaMinutes = 0;
-
-        LocalTime tempoMulta = null;
-
-        if (LocalTime.from(saida).isAfter(closingTime)
-                && LocalDate.from(saida).isEqual(LocalDate.from(entrada))) {
-
-            tempoMulta = LocalTime.from(saida).minusHours(closingTime.getHour())
-                    .minusMinutes(closingTime.getMinute())
-                    .minusSeconds(closingTime.getSecond())
-                    .minusNanos(closingTime.getNano());
-
-        } else if (LocalTime.from(saida).isAfter(closingTime)
-                && LocalDate.from(saida).isAfter(LocalDate.from(entrada))) {
-
-            multaMinutes += Duration.between(closingTime, saida).toMinutes();
-
-            int diasEstacionados = Math.toIntExact(Duration.between(LocalDate.from(entrada).atTime(openingTime)
-                            , LocalDate.from(saida).atTime(closingTime))
-                    .toDays()) + 1;
-
-            multaMinutes += totalMinutes - (diasEstacionados * openHoursMinutes);
-
-            int hours = multaMinutes / 60;
-            int minutes = multaMinutes % 60;
-
-            tempoMulta = LocalTime.of(hours, minutes);
-        } else {
-            movimentacao.setTempoMulta(LocalTime.MIDNIGHT);
+        if (ano > 0) {
+            dias += 365 * ano;
         }
 
-        movimentacao.setTempoMulta(tempoMulta);
+        // Verificar se a entrada ocorreu antes do horário de início do expediente
+        if (entrada.toLocalTime().isBefore(inicioExpediente)) {
+            tempoMultaMinutos += Duration.between(entrada.toLocalTime(), inicioExpediente).toMinutes();
+        }
 
-        movimentacao.setValorMulta(BigDecimal.valueOf(tempoMulta.getHour())
-                .multiply(movimentacao.getValorHoraMulta()));
+        // Verificar se a saída ocorreu após o horário de fechamento do expediente
+        if (saida.toLocalTime().isAfter(fimExpediente)) {
+            tempoMultaMinutos += Duration.between(fimExpediente, saida.toLocalTime()).toMinutes();
+        }
 
+        if (dias > 0) {
+            int duracaoExpediente = (int) Duration.between(inicioExpediente, fimExpediente).toMinutes();
+            tempoMultaMinutos += dias * duracaoExpediente - duracaoExpediente;
+        }
+
+        // Calcular horas e minutos da multa
+        int tempoMultaHoras = tempoMultaMinutos / 60;
+        int tempoMultaMinutes = tempoMultaMinutos % 60;
+
+        movimentacao.setTempoMultaHoras(tempoMultaHoras);
+        movimentacao.setTempoMultaMinutes(tempoMultaMinutes);
     }
 
-    private void manageDesconto(Movimentacao movimentacao, int tempoPagoHoras, int tempoPagoMinutos) {
+    private void manageDesconto(Movimentacao movimentacao) {
+        // Obter o condutor da movimentação
+        Condutor condutor = condutorRepository.findById(movimentacao.getCondutor().getId()).orElse(null);
 
+        if (condutor != null) {
+            int tempoPagoHoras = condutor.getTempoPagoHoras();
+            int tempoHoras = movimentacao.getTempoHoras();
 
+            int currentMultiple50 = tempoPagoHoras / 50;
+            int nextMultiple50 = (tempoPagoHoras + tempoHoras) / 50;
+
+            // Verificar se o próximo múltiplo de 50 horas foi atingido
+            if (nextMultiple50 > currentMultiple50) {
+                int numNewMultiples = nextMultiple50 - currentMultiple50;
+                int descontoToAdd = numNewMultiples * 5;
+
+                // Adicionar o desconto ao condutor e à movimentação
+                int currentDesconto = condutor.getTempoDescontoHoras();
+                int newDescontoHours = currentDesconto + descontoToAdd;
+
+                condutor.setTempoDescontoHoras(newDescontoHours);
+                movimentacao.setTempoDesconto(newDescontoHours);
+            }
+        }
     }
 
     private void configurarValoresPadrao(Movimentacao movimentacao) {
 
         // Configurar valores padrão para a movimentação
-        movimentacao.setTempoMulta(LocalTime.MIDNIGHT);
         movimentacao.setTempoHoras(0);
         movimentacao.setTempoMinutos(0);
         movimentacao.setValorDesconto(BigDecimal.ZERO);

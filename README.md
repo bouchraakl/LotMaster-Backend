@@ -61,7 +61,7 @@ Follow the instructions below to get the parking management system backend up an
 
 ## API Documentation
 
-For detailed API documentation and examples, please refer to the [API Documentation]() file on wiki.
+For detailed API documentation and examples, please refer to the [API Documentation](https://github.com/bouchraakl/ParkingManagerBackend/wiki/API-Documentation) file on wiki.
 
 ## Socials 
 [![LinkedIn](https://img.shields.io/badge/linkedin-%230077B5.svg?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/bouchra-akl/)

@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -58,6 +59,7 @@ public class MovimentacaoService {
 
         BigDecimal valorMinutoMulta = configuracao.getValorMinutoMulta();
         movimentacao.setValorHoraMulta(valorMinutoMulta.multiply(new BigDecimal("60.0")));
+        movimentacao.setValorHora(configuracao.getValorHora());
 
         movimentacao.setCadastro(LocalDateTime.now());
         validarMovimentacao(movimentacao);
@@ -73,7 +75,7 @@ public class MovimentacaoService {
             configurarValoresPadrao(movimentacao);
         }
 
-        movimentacao.setValorHora(configuracao.getValorHora());
+
     }
 
     /**
@@ -209,6 +211,16 @@ public class MovimentacaoService {
 
         // Gerenciar todas as operações de desconto
         manageDesconto(movimentacao);
+
+        BigDecimal valorHorasEstacionadas = (new BigDecimal(movimentacao.getTempoHoras())
+                .multiply(movimentacao.getValorHora()))
+                .add(new BigDecimal(movimentacao.getTempoMinutos())
+                        .multiply(movimentacao.getValorHora()
+                                .divide(new BigDecimal(60), RoundingMode.HALF_UP)));
+
+        BigDecimal valorTotal = (valorHorasEstacionadas.add(movimentacao.getValorMulta()))
+                .subtract(movimentacao.getValorDesconto());
+        movimentacao.setValorTotal(valorTotal);
     }
 
     private void valoresCondutor(Movimentacao movimentacao) {
@@ -218,19 +230,16 @@ public class MovimentacaoService {
 
         // Adicionar horas e minutos pagos ao condutor
         int hoursToAdd = movimentacao.getTempoHoras();
-        int minutesToAdd = movimentacao.getTempoMinutos() % 60;
+        int minutesToAdd = movimentacao.getTempoMinutos();
 
         condutor.setTempoPagoHoras(condutor.getTempoPagoHoras() + hoursToAdd);
         condutor.setTempoPagoMinutos(condutor.getTempoPagoMinutos() + minutesToAdd);
 
         // Verificar se os minutos pagos ultrapassaram 60 minutos
-        condutor.setTempoPagoHoras(condutor.getTempoPagoHoras() + condutor.getTempoPagoMinutos() / 60);
-        condutor.setTempoPagoMinutos(condutor.getTempoPagoMinutos() % 60);
-
-        // Verificar se os minutos pagos ultrapassaram 60 minutos novamente após a adição
         int extraHours = condutor.getTempoPagoMinutos() / 60;
         condutor.setTempoPagoMinutos(condutor.getTempoPagoMinutos() % 60);
         condutor.setTempoPagoHoras(condutor.getTempoPagoHoras() + extraHours);
+
     }
 
     private void calculateMulta(Movimentacao movimentacao,
@@ -270,11 +279,14 @@ public class MovimentacaoService {
         movimentacao.setTempoMultaHoras(tempoMultaHoras);
         movimentacao.setTempoMultaMinutes(tempoMultaMinutes);
 
-        BigDecimal totalMulta = (new BigDecimal(movimentacao.getTempoMultaHoras())
-                .multiply(movimentacao.getValorHoraMulta()).add(new BigDecimal(movimentacao.getTempoMultaMinutes()).multiply(movimentacao.getValorHoraMulta()).divide(new BigDecimal(60))));
+        // Calculando valor multa
+        BigDecimal valorMultaTotal = (new BigDecimal(movimentacao.getTempoMultaHoras())
+                .multiply(movimentacao.getValorHoraMulta()))
+                .add(new BigDecimal(movimentacao.getTempoMultaMinutes())
+                        .multiply(movimentacao.getValorHoraMulta()
+                                .divide(new BigDecimal(60), RoundingMode.HALF_UP)));
 
-        movimentacao.setValorMulta(totalMulta);
-
+        movimentacao.setValorMulta(valorMultaTotal);
     }
 
     private void manageDesconto(Movimentacao movimentacao) {
@@ -298,9 +310,19 @@ public class MovimentacaoService {
                 int newDescontoHours = currentDesconto + descontoToAdd;
 
                 condutor.setTempoDescontoHoras(newDescontoHours);
-                movimentacao.setTempoDesconto(newDescontoHours);
+
             }
+            if (condutor.getTempoDescontoHoras() != 0) {
+                movimentacao.setTempoDesconto(condutor.getTempoDescontoHoras());
+            }
+
+            int tempoDesconto = movimentacao.getTempoDesconto();
+            BigDecimal valorDesconto = BigDecimal.valueOf(tempoDesconto).multiply(movimentacao.getValorHora());
+
+            movimentacao.setValorDesconto(valorDesconto);
+
         }
+
     }
 
     private void configurarValoresPadrao(Movimentacao movimentacao) {

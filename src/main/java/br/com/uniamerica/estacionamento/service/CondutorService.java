@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 /*
@@ -23,8 +25,6 @@ public class CondutorService {
 
     @Autowired
     private CondutorRepository condutorRepository;
-    @Autowired
-    private MovimentacaoRepository movimentacaoRepository;
 
     /**
      * Valida o cadastro de um novo condutor.
@@ -34,10 +34,8 @@ public class CondutorService {
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarCadastroCondutor(Condutor condutor) {
 
-        // Verifica se a data de cadastro foi informada
-        Assert.notNull(condutor.getCadastro(),
-                "O cadastro do condutor não pode ser nulo. " +
-                        "Verifique se todas as informações foram preenchidas corretamente.");
+        // Set data now() na criação da movimentação
+        condutor.setCadastro(LocalDateTime.now());
 
         // Verifica se o nome do condutor não é nulo
         Assert.notNull(condutor.getNome(), "O nome do condutor não pode ser nulo.");
@@ -86,6 +84,11 @@ public class CondutorService {
         // Verifica se o telefone do condutor não é uma string vazia
         Assert.hasText(condutor.getTelefone(), "O telefone do condutor não pode ser vazio.");
 
+//        // Set valor de tempoPago
+//        Long totalDurationInSeconds = movimentacaoRepository.sumByTempo(condutor.getId());
+//        LocalTime totalDuration = LocalTime.ofSecondOfDay(totalDurationInSeconds);
+//        condutor.setTempoPago(totalDuration);
+
 
     }
 
@@ -97,10 +100,8 @@ public class CondutorService {
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarUpdateCondutor(Condutor condutor) {
 
-        // Verifica se a data de cadastro foi informada
-        Assert.notNull(condutor.getCadastro(),
-                "O cadastro do condutor não pode ser nulo. " +
-                        "Verifique se todas as informações foram preenchidas corretamente.");
+        // Set data now() na edição da movimentação
+        condutor.setAtualizacao(LocalDateTime.now());
 
         // Verificar se o condutor existe no banco de dados
         Assert.notNull(condutor.getId(),
@@ -123,10 +124,6 @@ public class CondutorService {
         Assert.isTrue(condutor.getNome().matches(nomeFormat),
                 "O nome do condutor deve conter apenas letras, espaços e hífens. " +
                         "Por favor, verifique e tente novamente.");
-
-        // Verifica o length do nome do condutor
-        Assert.isTrue(condutor.getNome().length() > 40,
-                "O nome do condutor deve ter no máximo 40 caracteres.");
 
         // Verifica se não há nenhum outro condutor com o mesmo CPF cadastrado
         final List<Condutor> condutorbyCPF = this.condutorRepository.findbyCPF(condutor.getCpf());
@@ -158,6 +155,11 @@ public class CondutorService {
 
         // Verifica se o telefone do condutor não é uma string vazia
         Assert.hasText(condutor.getTelefone(), "O telefone do condutor não pode ser vazio.");
+
+//        // Set valor de tempoPago
+//        Long totalDurationInSeconds = movimentacaoRepository.sumByTempo(condutor.getId());
+//        LocalTime totalDuration = LocalTime.ofSecondOfDay(totalDurationInSeconds);
+//        condutor.setTempoPago(totalDuration);
 
     }
 

@@ -18,7 +18,7 @@ import java.time.LocalTime;
 @Entity
 @Audited
 @Table(name = "configuracoes", schema = "public")
-@AuditTable(value = "configuracoes_audit",schema = "audit")
+@AuditTable(value = "configuracoes_audit", schema = "audit")
 public class Configuracao extends AbstractEntity {
 
     @Getter
@@ -44,7 +44,7 @@ public class Configuracao extends AbstractEntity {
     @Getter
     @Setter
     @Column(name = "tempo_paradesconto")
-    private LocalTime tempoParaDesconto;
+    private int tempoParaDesconto;
 
     @Getter
     @Setter
@@ -70,7 +70,5 @@ public class Configuracao extends AbstractEntity {
     @Setter
     @Column(name = "vagas_van")
     private int vagasVan;
-
-
 
 }

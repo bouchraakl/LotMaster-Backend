@@ -17,14 +17,9 @@ public class ConfiguracaoService {
     @Autowired
     private ConfiguracaoRepository configuracaoRepository;
 
-    @Transactional(readOnly = true, rollbackFor = Exception.class)
+    @Transactional
     public void validarCadastroConfiguracao(final Configuracao configuracao) {
-
-        Assert.notNull(configuracao.getValorHora(), "O valor da hora não pode ser nulo.");
-        Assert.notNull(configuracao.getInicioExpediente(),
-                "O horário de início de expediente não pode ser nulo.");
-        Assert.notNull(configuracao.getFimExpediente(),
-                "O horário de fim de expediente não pode ser nulo.");
+        this.configuracaoRepository.save(configuracao);
     }
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)
@@ -40,10 +35,7 @@ public class ConfiguracaoService {
                 "O ID da configuracao especificadoa não foi encontrado na base de dados. " +
                         "Por favor, verifique se o ID está correto e tente novamente.");
 
-
-        Assert.notNull(configuracao.getValorHora(), "Valor hora não informada!");
-        Assert.notNull(configuracao.getInicioExpediente(), "Início do expediente não informado!");
-        Assert.notNull(configuracao.getFimExpediente(), "Fim do expediente não informado!");
+        this.configuracaoRepository.save(configuracao);
     }
 
 }

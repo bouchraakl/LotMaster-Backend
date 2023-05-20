@@ -5,6 +5,7 @@ package br.com.uniamerica.estacionamento.controller;
 
 import br.com.uniamerica.estacionamento.entity.Marca;
 import br.com.uniamerica.estacionamento.entity.Modelo;
+import br.com.uniamerica.estacionamento.entity.Veiculo;
 import br.com.uniamerica.estacionamento.repository.ModeloRepository;
 import br.com.uniamerica.estacionamento.repository.VeiculoRepository;
 import br.com.uniamerica.estacionamento.service.ModeloService;
@@ -16,6 +17,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /* ----------------------------------------------------- */
 @RestController
@@ -48,7 +51,12 @@ public class ModeloController {
     /* -------------------get by ativos--------------------------- */
     @GetMapping("/ativos")
     public ResponseEntity<?> findModeloAtivos() {
-        return ResponseEntity.ok(this.modeloRepository.findAllAtivo());
+        List<Modelo> modeloList = this.modeloRepository.findAllAtivo();
+        if (modeloList == null || modeloList.isEmpty()) {
+            return ResponseEntity.badRequest().body("Não tem nem um veiculo ativo");
+        } else {
+            return ResponseEntity.ok(modeloList);
+        }
     }
 
     /* -------------------post--------------------------- */

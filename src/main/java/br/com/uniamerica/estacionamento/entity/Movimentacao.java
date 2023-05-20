@@ -4,6 +4,8 @@ package br.com.uniamerica.estacionamento.entity;
 /* -------------------Imports--------------------------- */
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.envers.AuditTable;
@@ -24,17 +26,20 @@ public class Movimentacao extends AbstractEntity {
     @Setter
     @ManyToOne
     @JoinColumn(name = "veiculo_id", nullable = false)
+    @NotNull(message = "O objeto veículo não foi informado.")
     private Veiculo veiculo;
 
     @Getter
     @Setter
     @ManyToOne
     @JoinColumn(name = "condutor_id", nullable = false)
+    @NotNull(message = "O objeto condutor não foi informado.")
     private Condutor condutor;
 
     @Getter
     @Setter
     @Column(name = "entrada", nullable = false)
+    @NotNull(message = "A data de entrada da movimentação não foi informada.")
     private LocalDateTime entrada;
 
     @Getter

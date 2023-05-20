@@ -10,6 +10,7 @@ import br.com.uniamerica.estacionamento.service.VeiculoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -54,10 +55,9 @@ public class VeiculoController {
 
     /* -------------------post--------------------------- */
     @PostMapping
-    public ResponseEntity<?> registerVeiculos(@RequestBody final Veiculo veiculo) {
+    public ResponseEntity<?> registerVeiculos(@RequestBody @Validated final Veiculo veiculo) {
         try {
             this.veiculoService.validarCadastroVeiculo(veiculo);
-            this.veiculoRepository.save(veiculo);
             return ResponseEntity.ok("Registro Cadastrado com Sucesso");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -67,13 +67,11 @@ public class VeiculoController {
     /* -------------------put--------------------------- */
     @PutMapping
     public ResponseEntity<?> editarVeiculo(
-            @RequestParam("id") final Long id,
-            @RequestBody final Veiculo veiculo
+            @RequestBody @Validated final Veiculo veiculo
     ) {
 
         try {
             this.veiculoService.validarUpdateVeiculo(veiculo);
-            this.veiculoRepository.save(veiculo);
             return ResponseEntity.ok("Registro atualizado com sucesso");
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(e.getMessage());

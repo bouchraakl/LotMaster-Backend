@@ -15,20 +15,16 @@ public class ExceptionHandlerAdvice {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Map<String, String> handleValidationException(
-            final MethodArgumentNotValidException methodArgumentNotValidException
-    ){
-        final Map<String, String> errors = new HashMap<>();
+    public Map<String, String> handlelValidationExeption(MethodArgumentNotValidException ex){
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
 
-        methodArgumentNotValidException
-                .getBindingResult()
-                .getAllErrors()
-                .forEach((error) -> {
-                    errors.put(
-                            ((FieldError) error).getField(),
-                            error.getDefaultMessage());
-                });
+            errors.put(fieldName, errorMessage);
+        });
 
         return errors;
     }
+
 }

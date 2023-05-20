@@ -18,4 +18,8 @@ public interface MarcaRepository extends JpaRepository<Marca, Long> {
     @Query("from Marca where ativo = true")
     public List<Marca> findAllAtivo();
 
+    @Query("from Marca where id = :id and ativo = true")
+    public List<Marca> findActiveElement(@Param("id") Long id);
+
+
 }

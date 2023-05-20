@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /* ----------------------------------------------------- */
@@ -48,10 +49,9 @@ public class MarcaController {
 
     /* -------------------post--------------------------- */
     @PostMapping
-    public ResponseEntity<?> registerMarca(@RequestBody final Marca marca) {
+    public ResponseEntity<?> registerMarca(@RequestBody @Validated final Marca marca) {
         try {
             this.marcaService.validarCadastroMarca(marca);
-            this.marcaRepository.save(marca);
             return ResponseEntity.ok("Marca registrada com sucesso");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -61,12 +61,10 @@ public class MarcaController {
     /* -------------------put--------------------------- */
     @PutMapping
     public ResponseEntity<?> editarMarca(
-            @RequestParam("id") final Long id,
-            @RequestBody final Marca marca
+            @RequestBody @Validated final Marca marca
     ) {
         try {
             this.marcaService.validarUpdateMarca(marca);
-            this.marcaRepository.save(marca);
             return ResponseEntity.ok("Registro atualizado com sucesso");
         } catch (DataIntegrityViolationException e) {
             return ResponseEntity.internalServerError().body("Error: " + e.getCause().getCause().getMessage());

@@ -20,5 +20,8 @@ public interface CondutorRepository extends JpaRepository<Condutor, Long> {
     @Query("from Condutor where ativo = true")
     public List<Condutor> findAllAtivo();
 
+    @Query("from Condutor where id = :id and ativo = true")
+    public List<Condutor> findActiveElement(@Param("id") Long id);
+
 
 }

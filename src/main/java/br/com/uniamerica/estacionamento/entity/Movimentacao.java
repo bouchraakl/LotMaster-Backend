@@ -4,6 +4,8 @@ package br.com.uniamerica.estacionamento.entity;
 /* -------------------Imports--------------------------- */
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.envers.AuditTable;
@@ -24,17 +26,20 @@ public class Movimentacao extends AbstractEntity {
     @Setter
     @ManyToOne
     @JoinColumn(name = "veiculo_id", nullable = false)
+    @NotNull(message = "O objeto veículo não foi informado.")
     private Veiculo veiculo;
 
     @Getter
     @Setter
     @ManyToOne
     @JoinColumn(name = "condutor_id", nullable = false)
+    @NotNull(message = "O objeto condutor não foi informado.")
     private Condutor condutor;
 
     @Getter
     @Setter
     @Column(name = "entrada", nullable = false)
+    @NotNull(message = "A data de entrada da movimentação não foi informada.")
     private LocalDateTime entrada;
 
     @Getter
@@ -44,12 +49,12 @@ public class Movimentacao extends AbstractEntity {
 
     @Getter
     @Setter
-    @Column(name = "tempoHoras",nullable = false)
+    @Column(name = "tempoHoras")
     private int tempoHoras;
 
     @Getter
     @Setter
-    @Column(name = "tempoMinutos",nullable = false)
+    @Column(name = "tempoMinutos")
     private int tempoMinutos;
 
     @Getter

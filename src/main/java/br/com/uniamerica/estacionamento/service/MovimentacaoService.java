@@ -19,6 +19,7 @@ import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 
 /*
@@ -52,7 +53,7 @@ public class MovimentacaoService {
      *
      * @param movimentacao a movimentação de veículo a ser validada
      */
-    @Transactional(readOnly = true, rollbackFor = Exception.class)
+    @Transactional
     public void validarCadastroMovimentacao(Movimentacao movimentacao) {
 
         Configuracao configuracao = obterConfiguracao();
@@ -74,8 +75,7 @@ public class MovimentacaoService {
         } else {
             configurarValoresPadrao(movimentacao);
         }
-
-
+        this.movimentacaoRepository.save(movimentacao);
     }
 
     /**
@@ -83,19 +83,17 @@ public class MovimentacaoService {
      *
      * @param movimentacao Movimentação a ser validada
      */
-    @Transactional(readOnly = true, rollbackFor = Exception.class)
+    @Transactional
     public void validarUpdateMovimentacao(Movimentacao movimentacao) {
-
-        movimentacao.setAtualizacao(LocalDateTime.now());
 
         Assert.notNull(movimentacao.getId(), "O ID da movimentação fornecida é nulo.");
 
         Assert.isTrue(movimentacaoRepository.existsById(movimentacao.getId()),
                 "O ID da movimentação especificada não foi encontrada na base de dados.");
 
-        validarVeiculo(movimentacao.getVeiculo());
-        validarCondutor(movimentacao.getCondutor());
-        Assert.notNull(movimentacao.getEntrada(), "A data de entrada da movimentação não foi informada.");
+
+        validarMovimentacao(movimentacao);
+
 
         if (movimentacao.getSaida() != null) {
 
@@ -107,6 +105,7 @@ public class MovimentacaoService {
         } else {
             configurarValoresPadrao(movimentacao);
         }
+        this.movimentacaoRepository.save(movimentacao);
     }
 
     /**
@@ -115,7 +114,7 @@ public class MovimentacaoService {
      * @param id o ID da movimentação a ser excluída
      * @throws IllegalArgumentException se o ID da movimentação não existir no banco de dados
      */
-    @Transactional(readOnly = true, rollbackFor = Exception.class)
+    @Transactional
     public void validarDeleteMovimentacao(Long id) {
 
         // Verificar se o ID do movimentacao existe no banco de dados
@@ -131,12 +130,17 @@ public class MovimentacaoService {
         validarVeiculo(movimentacao.getVeiculo());
         validarCondutor(movimentacao.getCondutor());
 
-        // Garantir que a entrada não seja nula
-        Assert.notNull(movimentacao.getEntrada(), "A data de entrada da movimentação não foi informada.");
 
         // Verificar se o horário atual está dentro do horário de funcionamento permitido
         Assert.isTrue(!LocalTime.from(movimentacao.getEntrada())
-                        .isBefore(obterConfiguracao().getInicioExpediente()),
+                      .isBefore(obterConfiguracao().getInicioExpediente()),
+                "Erro: Horário inválido. O horário atual está fora do intervalo de funcionamento permitido. "
+                        + "Horário de funcionamento: das "
+                        + obterConfiguracao().getInicioExpediente() + " às "
+                        + obterConfiguracao().getFimExpediente() + ".");
+
+        Assert.isTrue(!LocalTime.from(movimentacao.getEntrada())
+                        .isAfter(obterConfiguracao().getFimExpediente()),
                 "Erro: Horário inválido. O horário atual está fora do intervalo de funcionamento permitido. "
                         + "Horário de funcionamento: das "
                         + obterConfiguracao().getInicioExpediente() + " às "
@@ -146,11 +150,9 @@ public class MovimentacaoService {
 
     private void validarCondutor(Condutor condutor) {
 
-        // Garantir que o condutor não seja nulo
-        Assert.notNull(condutor, "O objeto condutor não foi informado.");
-
         // Garantir que o condutor esteja ativo
-        Assert.isTrue(condutor.isAtivo(), "O condutor associado a essa movimentação está inativo.");
+        final List<Condutor> isActive = condutorRepository.findActiveElement(condutor.getId());
+        Assert.isTrue(!isActive.isEmpty(), "O condutor associado a essa movimentação está inativo.");
 
         // Garantir que o ID do condutor não seja nulo
         Assert.notNull(condutor.getId(), "O ID do condutor em movimentação não pode ser nulo.");
@@ -164,11 +166,8 @@ public class MovimentacaoService {
 
     private void validarVeiculo(Veiculo veiculo) {
 
-        // Garantir que o veículo não seja nulo
-        Assert.notNull(veiculo, "O objeto veículo não foi informado.");
-
-        // Garantir que o veículo esteja ativo
-        Assert.isTrue(veiculo.isAtivo(), "O veículo associado a essa movimentação está inativo.");
+        final List<Veiculo> isActive = veiculoRepository.findActiveElement(veiculo.getId());
+        Assert.isTrue(!isActive.isEmpty(), "O veiculo associado a essa movimentação está inativo.");
 
         // Garantir que o ID do veículo não seja nulo
         Assert.notNull(veiculo.getId(), "O ID do veículo em movimentação não pode ser nulo.");

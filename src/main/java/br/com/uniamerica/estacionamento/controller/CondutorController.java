@@ -11,10 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /* ----------------------------------------------------- */
-@Controller
+@RestController
 @RequestMapping(value = "api/condutor")
 public class CondutorController {
 
@@ -49,10 +50,9 @@ public class CondutorController {
 
     /* -------------------post--------------------------- */
     @PostMapping
-    public ResponseEntity<?> cadastrarCondutor(@RequestBody final Condutor condutor) {
+    public ResponseEntity<?> cadastrarCondutor(@RequestBody @Validated final Condutor condutor) {
         try {
             this.condutorService.validarCadastroCondutor(condutor);
-            this.condutorRepository.save(condutor);
             return ResponseEntity.ok("Condutor Cadastrado com Sucesso");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -62,12 +62,10 @@ public class CondutorController {
     /* -------------------put--------------------------- */
     @PutMapping
     public ResponseEntity<?> editarCondutor(
-            @RequestParam("id") final Long id,
-            @RequestBody final Condutor condutor
+            @RequestBody @Validated final Condutor condutor
     ) {
         try {
             this.condutorService.validarUpdateCondutor(condutor);
-            this.condutorRepository.save(condutor);
             return ResponseEntity.ok("Registro atualizado com sucesso");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.internalServerError().body("Error: " + e.getMessage());

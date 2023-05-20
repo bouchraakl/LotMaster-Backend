@@ -9,10 +9,11 @@ import br.com.uniamerica.estacionamento.service.MovimentacaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /* ----------------------------------------------------- */
-@Controller
+@RestController
 @RequestMapping("api/movimentacao")
 public class MovimentacaoController {
 
@@ -43,10 +44,9 @@ public class MovimentacaoController {
 
     /* -------------------post--------------------------- */
     @PostMapping
-    public ResponseEntity<?> registerMovimentacao(@RequestBody final Movimentacao movimentacao) {
+    public ResponseEntity<?> registerMovimentacao(@RequestBody @Validated final Movimentacao movimentacao) {
         try {
             this.movimentacaoService.validarCadastroMovimentacao(movimentacao);
-            this.movimentacaoRepository.save(movimentacao);
             return ResponseEntity.ok("Registro Cadastrado com Sucesso");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -56,13 +56,11 @@ public class MovimentacaoController {
     /* -------------------put--------------------------- */
     @PutMapping
     public ResponseEntity<?> editarMovimentacao(
-            @RequestParam("id") final Long id,
-            @RequestBody final Movimentacao movimentacao
+            @RequestBody @Validated final Movimentacao movimentacao
     ) {
 
         try {
             this.movimentacaoService.validarUpdateMovimentacao(movimentacao);
-            this.movimentacaoRepository.save(movimentacao);
             return ResponseEntity.ok("Registro atualizado com sucesso");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

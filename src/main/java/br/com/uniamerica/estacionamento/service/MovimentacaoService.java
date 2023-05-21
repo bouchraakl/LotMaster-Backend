@@ -3,24 +3,23 @@ package br.com.uniamerica.estacionamento.service;
 
 //------------------Imports----------------------
 
-import br.com.uniamerica.estacionamento.entity.Condutor;
-import br.com.uniamerica.estacionamento.entity.Configuracao;
-import br.com.uniamerica.estacionamento.entity.Movimentacao;
-import br.com.uniamerica.estacionamento.entity.Veiculo;
+import br.com.uniamerica.estacionamento.entity.*;
 import br.com.uniamerica.estacionamento.repository.CondutorRepository;
 import br.com.uniamerica.estacionamento.repository.ConfiguracaoRepository;
 import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
 import br.com.uniamerica.estacionamento.repository.VeiculoRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 
 /*
@@ -42,23 +41,26 @@ public class MovimentacaoService {
 
 
     private Configuracao obterConfiguracao() {
-        assert configuracaoRepository != null;
-        return configuracaoRepository.findById(1L).orElse(null);
+        Configuracao configuracao = configuracaoRepository.ultimaConfiguracao();
+        if (configuracao == null) {
+            throw new EntityNotFoundException("Erro, as configuracoes nao foram definidas.");
+        }
+        return configuracao;
     }
-
 
     /**
      * Realiza a validação dos dados necessários para cadastrar uma movimentação de veículo no estacionamento.
      *
      * @param movimentacao a movimentação de veículo a ser validada
      */
-    @Transactional(readOnly = true, rollbackFor = Exception.class)
+    @Transactional
     public void validarCadastroMovimentacao(Movimentacao movimentacao) {
 
         Configuracao configuracao = obterConfiguracao();
 
         BigDecimal valorMinutoMulta = configuracao.getValorMinutoMulta();
         movimentacao.setValorHoraMulta(valorMinutoMulta.multiply(new BigDecimal("60.0")));
+        movimentacao.setValorHora(configuracao.getValorHora());
 
         movimentacao.setCadastro(LocalDateTime.now());
         validarMovimentacao(movimentacao);
@@ -73,8 +75,7 @@ public class MovimentacaoService {
         } else {
             configurarValoresPadrao(movimentacao);
         }
-
-        movimentacao.setValorHora(configuracao.getValorHora());
+        this.movimentacaoRepository.save(movimentacao);
     }
 
     /**
@@ -82,19 +83,17 @@ public class MovimentacaoService {
      *
      * @param movimentacao Movimentação a ser validada
      */
-    @Transactional(readOnly = true, rollbackFor = Exception.class)
+    @Transactional
     public void validarUpdateMovimentacao(Movimentacao movimentacao) {
-
-        movimentacao.setAtualizacao(LocalDateTime.now());
 
         Assert.notNull(movimentacao.getId(), "O ID da movimentação fornecida é nulo.");
 
         Assert.isTrue(movimentacaoRepository.existsById(movimentacao.getId()),
                 "O ID da movimentação especificada não foi encontrada na base de dados.");
 
-        validarVeiculo(movimentacao.getVeiculo());
-        validarCondutor(movimentacao.getCondutor());
-        Assert.notNull(movimentacao.getEntrada(), "A data de entrada da movimentação não foi informada.");
+
+        validarMovimentacao(movimentacao);
+
 
         if (movimentacao.getSaida() != null) {
 
@@ -106,6 +105,7 @@ public class MovimentacaoService {
         } else {
             configurarValoresPadrao(movimentacao);
         }
+        this.movimentacaoRepository.save(movimentacao);
     }
 
     /**
@@ -114,7 +114,7 @@ public class MovimentacaoService {
      * @param id o ID da movimentação a ser excluída
      * @throws IllegalArgumentException se o ID da movimentação não existir no banco de dados
      */
-    @Transactional(readOnly = true, rollbackFor = Exception.class)
+    @Transactional
     public void validarDeleteMovimentacao(Long id) {
 
         // Verificar se o ID do movimentacao existe no banco de dados
@@ -130,18 +130,29 @@ public class MovimentacaoService {
         validarVeiculo(movimentacao.getVeiculo());
         validarCondutor(movimentacao.getCondutor());
 
-        // Garantir que a entrada não seja nula
-        Assert.notNull(movimentacao.getEntrada(), "A data de entrada da movimentação não foi informada.");
+
+        // Verificar se o horário atual está dentro do horário de funcionamento permitido
+        Assert.isTrue(!LocalTime.from(movimentacao.getEntrada())
+                      .isBefore(obterConfiguracao().getInicioExpediente()),
+                "Erro: Horário inválido. O horário atual está fora do intervalo de funcionamento permitido. "
+                        + "Horário de funcionamento: das "
+                        + obterConfiguracao().getInicioExpediente() + " às "
+                        + obterConfiguracao().getFimExpediente() + ".");
+
+        Assert.isTrue(!LocalTime.from(movimentacao.getEntrada())
+                        .isAfter(obterConfiguracao().getFimExpediente()),
+                "Erro: Horário inválido. O horário atual está fora do intervalo de funcionamento permitido. "
+                        + "Horário de funcionamento: das "
+                        + obterConfiguracao().getInicioExpediente() + " às "
+                        + obterConfiguracao().getFimExpediente() + ".");
 
     }
 
     private void validarCondutor(Condutor condutor) {
 
-        // Garantir que o condutor não seja nulo
-        Assert.notNull(condutor, "O objeto condutor não foi informado.");
-
         // Garantir que o condutor esteja ativo
-        Assert.isTrue(condutor.isAtivo(), "O condutor associado a essa movimentação está inativo.");
+        final List<Condutor> isActive = condutorRepository.findActiveElement(condutor.getId());
+        Assert.isTrue(!isActive.isEmpty(), "O condutor associado a essa movimentação está inativo.");
 
         // Garantir que o ID do condutor não seja nulo
         Assert.notNull(condutor.getId(), "O ID do condutor em movimentação não pode ser nulo.");
@@ -155,11 +166,8 @@ public class MovimentacaoService {
 
     private void validarVeiculo(Veiculo veiculo) {
 
-        // Garantir que o veículo não seja nulo
-        Assert.notNull(veiculo, "O objeto veículo não foi informado.");
-
-        // Garantir que o veículo esteja ativo
-        Assert.isTrue(veiculo.isAtivo(), "O veículo associado a essa movimentação está inativo.");
+        final List<Veiculo> isActive = veiculoRepository.findActiveElement(veiculo.getId());
+        Assert.isTrue(!isActive.isEmpty(), "O veiculo associado a essa movimentação está inativo.");
 
         // Garantir que o ID do veículo não seja nulo
         Assert.notNull(veiculo.getId(), "O ID do veículo em movimentação não pode ser nulo.");
@@ -175,39 +183,143 @@ public class MovimentacaoService {
 
         Configuracao configuracao = obterConfiguracao();
 
-         LocalTime OPENING_TIME = configuracao.getInicioExpediente();
-         LocalTime CLOSING_TIME = configuracao.getFimExpediente();
+        // Definindo horário de funcionamento do estacionamento
+        LocalTime OPENING_TIME = configuracao.getInicioExpediente();
+        LocalTime CLOSING_TIME = configuracao.getFimExpediente();
 
-        // Obter os valores de entrada, saída e valorMinutoMulta a partir dos objetos movimentacao e obterConfiguracao
         LocalDateTime entrada = movimentacao.getEntrada();
         LocalDateTime saida = movimentacao.getSaida();
         BigDecimal valorMinutoMulta = configuracao.getValorMinutoMulta();
 
-        // Verificar se o horário atual está dentro do horário de funcionamento permitido
-        Assert.isTrue(!LocalTime.from(entrada).isBefore(OPENING_TIME),
-                "Erro: Horário inválido. O horário atual está fora do intervalo de funcionamento permitido. "
-                        + "Horário de funcionamento: das "
-                        + OPENING_TIME + " às "
-                        + CLOSING_TIME + ".");
-
-        // Calcular a duração entre a entrada e a saída
+        // Calcula a duração entre a entrada e a saída
         Duration duracao = Duration.between(entrada, saida);
-        LocalTime duracaoLocalTime = duracao.toMinutes() >= 0 ? LocalTime.MIDNIGHT.plus(duracao)
-                : LocalTime.MIDNIGHT.minus(duracao);
-        movimentacao.setTempo(duracaoLocalTime);
 
-        if (LocalTime.from(saida).isAfter(CLOSING_TIME)) {
-            // Calcular o tempo para o qual uma multa é aplicável
-            LocalTime tempoMulta = LocalTime.from(saida).minusHours(CLOSING_TIME.getHour())
-                    .minusMinutes(CLOSING_TIME.getMinute())
-                    .minusSeconds(CLOSING_TIME.getSecond())
-                    .minusNanos(CLOSING_TIME.getNano());
+        long totalSecoundsOfDuration = duracao.getSeconds();
+        long hours = totalSecoundsOfDuration / 3600;
+        long minutes = (totalSecoundsOfDuration % 3600) / 60;
 
-            movimentacao.setTempoMulta(tempoMulta);
-            movimentacao.setValorMulta(BigDecimal.valueOf(tempoMulta.getHour())
-                    .multiply(movimentacao.getValorHoraMulta()));
-        } else {
-            configurarValoresPadrao(movimentacao);
+        // Define as horas e minutos totais da movimentação
+        movimentacao.setTempoHoras((int) hours);
+        movimentacao.setTempoMinutos((int) minutes);
+
+        // Calcular tempoMulta e valorTempoMulta
+        calculateMulta(movimentacao, entrada, saida, OPENING_TIME, CLOSING_TIME);
+
+        // Configurar tempos pagos e de desconto para o condutor associado
+        valoresCondutor(movimentacao);
+
+        // Gerenciar todas as operações de desconto
+        manageDesconto(movimentacao);
+
+        BigDecimal valorHorasEstacionadas = (new BigDecimal(movimentacao.getTempoHoras())
+                .multiply(movimentacao.getValorHora()))
+                .add(new BigDecimal(movimentacao.getTempoMinutos())
+                        .multiply(movimentacao.getValorHora()
+                                .divide(new BigDecimal(60), RoundingMode.HALF_UP)));
+
+        BigDecimal valorTotal = (valorHorasEstacionadas.add(movimentacao.getValorMulta()))
+                .subtract(movimentacao.getValorDesconto());
+        movimentacao.setValorTotal(valorTotal);
+    }
+
+    private void valoresCondutor(Movimentacao movimentacao) {
+        // Obter o condutor da movimentação
+        Condutor condutor = condutorRepository.findById(movimentacao.getCondutor().getId()).orElse(null);
+        assert condutor != null;
+
+        // Adicionar horas e minutos pagos ao condutor
+        int hoursToAdd = movimentacao.getTempoHoras();
+        int minutesToAdd = movimentacao.getTempoMinutos();
+
+        condutor.setTempoPagoHoras(condutor.getTempoPagoHoras() + hoursToAdd);
+        condutor.setTempoPagoMinutos(condutor.getTempoPagoMinutos() + minutesToAdd);
+
+        // Verificar se os minutos pagos ultrapassaram 60 minutos
+        int extraHours = condutor.getTempoPagoMinutos() / 60;
+        condutor.setTempoPagoMinutos(condutor.getTempoPagoMinutos() % 60);
+        condutor.setTempoPagoHoras(condutor.getTempoPagoHoras() + extraHours);
+
+    }
+
+    private void calculateMulta(Movimentacao movimentacao,
+                                LocalDateTime entrada,
+                                LocalDateTime saida,
+                                LocalTime inicioExpediente,
+                                LocalTime fimExpediente) {
+
+        int tempoMultaMinutos = 0;
+
+        int ano = saida.getYear() - entrada.getYear();
+        int dias = saida.getDayOfYear() - entrada.getDayOfYear();
+
+        if (ano > 0) {
+            dias += 365 * ano;
+        }
+
+        // Verificar se a entrada ocorreu antes do horário de início do expediente
+        if (entrada.toLocalTime().isBefore(inicioExpediente)) {
+            tempoMultaMinutos += Duration.between(entrada.toLocalTime(), inicioExpediente).toMinutes();
+        }
+
+        // Verificar se a saída ocorreu após o horário de fechamento do expediente
+        if (saida.toLocalTime().isAfter(fimExpediente)) {
+            tempoMultaMinutos += Duration.between(fimExpediente, saida.toLocalTime()).toMinutes();
+        }
+
+        if (dias > 0) {
+            int duracaoExpediente = (int) Duration.between(inicioExpediente, fimExpediente).toMinutes();
+            tempoMultaMinutos += dias * duracaoExpediente - duracaoExpediente;
+        }
+
+        // Calcular horas e minutos da multa
+        int tempoMultaHoras = tempoMultaMinutos / 60;
+        int tempoMultaMinutes = tempoMultaMinutos % 60;
+
+        movimentacao.setTempoMultaHoras(tempoMultaHoras);
+        movimentacao.setTempoMultaMinutes(tempoMultaMinutes);
+
+        // Calculando valor multa
+        BigDecimal valorMultaTotal = (new BigDecimal(movimentacao.getTempoMultaHoras())
+                .multiply(movimentacao.getValorHoraMulta()))
+                .add(new BigDecimal(movimentacao.getTempoMultaMinutes())
+                        .multiply(movimentacao.getValorHoraMulta()
+                                .divide(new BigDecimal(60), RoundingMode.HALF_UP)));
+
+        movimentacao.setValorMulta(valorMultaTotal);
+    }
+
+    private void manageDesconto(Movimentacao movimentacao) {
+        // Obter o condutor da movimentação
+        Condutor condutor = condutorRepository.findById(movimentacao.getCondutor().getId()).orElse(null);
+
+        if (condutor != null) {
+            int tempoPagoHoras = condutor.getTempoPagoHoras();
+            int tempoHoras = movimentacao.getTempoHoras();
+
+            int currentMultiple50 = tempoPagoHoras / 50;
+            int nextMultiple50 = (tempoPagoHoras + tempoHoras) / 50;
+
+            // Verificar se o próximo múltiplo de 50 horas foi atingido
+            if (nextMultiple50 > currentMultiple50) {
+                int numNewMultiples = nextMultiple50 - currentMultiple50;
+                int descontoToAdd = numNewMultiples * 5;
+
+                // Adicionar o desconto ao condutor e à movimentação
+                int currentDesconto = condutor.getTempoDescontoHoras();
+                int newDescontoHours = currentDesconto + descontoToAdd;
+
+                condutor.setTempoDescontoHoras(newDescontoHours);
+
+            }
+            if (condutor.getTempoDescontoHoras() != 0) {
+                movimentacao.setTempoDesconto(condutor.getTempoDescontoHoras());
+            }
+
+            int tempoDesconto = movimentacao.getTempoDesconto();
+            BigDecimal valorDesconto = BigDecimal.valueOf(tempoDesconto).multiply(movimentacao.getValorHora());
+
+            movimentacao.setValorDesconto(valorDesconto);
+
         }
 
     }
@@ -215,8 +327,8 @@ public class MovimentacaoService {
     private void configurarValoresPadrao(Movimentacao movimentacao) {
 
         // Configurar valores padrão para a movimentação
-        movimentacao.setTempoMulta(LocalTime.MIDNIGHT);
-        movimentacao.setTempo(LocalTime.MIDNIGHT);
+        movimentacao.setTempoHoras(0);
+        movimentacao.setTempoMinutos(0);
         movimentacao.setValorDesconto(BigDecimal.ZERO);
         movimentacao.setValorMulta(BigDecimal.ZERO);
 

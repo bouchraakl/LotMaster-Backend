@@ -4,8 +4,11 @@ package br.com.uniamerica.estacionamento.entity;
 /* -------------------Imports--------------------------- */
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Length;
 
 import java.time.LocalDateTime;
 
@@ -21,6 +24,7 @@ public abstract class AbstractEntity {
 
     @Getter @Setter
     @Column(name = "dtCadastro", nullable = false)
+    @NotNull(message = "Data de cadastro não informada.")
     private LocalDateTime cadastro;
 
     @Getter @Setter
@@ -29,6 +33,7 @@ public abstract class AbstractEntity {
 
     @Getter @Setter
     @Column(name = "ativo", nullable = false)
+    @NotNull(message = "Campo ativo não informado.")
     private boolean ativo;
 
     @PrePersist

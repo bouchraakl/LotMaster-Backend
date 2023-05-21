@@ -11,10 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /* ----------------------------------------------------- */
-@Controller
+@RestController
 @RequestMapping("api/configuracao")
 public class ConfiguracaoController {
 
@@ -39,10 +40,9 @@ public class ConfiguracaoController {
 
     /* -------------------post--------------------------- */
     @PostMapping
-    public ResponseEntity<?> registerMarca(@RequestBody final Configuracao configuracao) {
+    public ResponseEntity<?> registerMarca(@RequestBody @Validated  final Configuracao configuracao) {
         try {
             this.configuracaoService.validarCadastroConfiguracao(configuracao);
-            this.configuracaoRepository.save(configuracao);
             return ResponseEntity.ok("Configuracao Registrada Com Sucesso");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -52,12 +52,10 @@ public class ConfiguracaoController {
     /* -------------------put--------------------------- */
     @PutMapping
     public ResponseEntity<?> editarConfiguracao(
-            @RequestParam("id") final Long id,
-            @RequestBody final Configuracao configuracao
+            @RequestBody @Validated final Configuracao configuracao
     ) {
         try {
             this.configuracaoService.validarUpdateConfiguracao(configuracao);
-            this.configuracaoRepository.save(configuracao);
             return ResponseEntity.ok("Registro atualizado com sucesso");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

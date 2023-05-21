@@ -62,19 +62,18 @@ public class MovimentacaoService {
         movimentacao.setValorHoraMulta(valorMinutoMulta.multiply(new BigDecimal("60.0")));
         movimentacao.setValorHora(configuracao.getValorHora());
 
-        movimentacao.setCadastro(LocalDateTime.now());
+
         validarMovimentacao(movimentacao);
+        verificarVagasDisponiveis(movimentacao);
 
         if (movimentacao.getSaida() != null) {
-
             Assert.isTrue(movimentacao.getEntrada().isBefore(movimentacao.getSaida()),
                     "O tempo de entrada deve ser posterior ao tempo de saída.");
-
             saidaOperations(movimentacao);
-
         } else {
             configurarValoresPadrao(movimentacao);
         }
+
         this.movimentacaoRepository.save(movimentacao);
     }
 
@@ -92,6 +91,7 @@ public class MovimentacaoService {
                 "O ID da movimentação especificada não foi encontrada na base de dados.");
 
 
+        verificarVagasDisponiveis(movimentacao);
         validarMovimentacao(movimentacao);
 
 
@@ -105,6 +105,7 @@ public class MovimentacaoService {
         } else {
             configurarValoresPadrao(movimentacao);
         }
+
         this.movimentacaoRepository.save(movimentacao);
     }
 
@@ -125,26 +126,18 @@ public class MovimentacaoService {
     }
 
     private void validarMovimentacao(Movimentacao movimentacao) {
-
         // Validar veículo e condutor
         validarVeiculo(movimentacao.getVeiculo());
         validarCondutor(movimentacao.getCondutor());
 
+        LocalTime entrada = LocalTime.from(movimentacao.getEntrada());
+        LocalTime inicioExpediente = obterConfiguracao().getInicioExpediente();
+        LocalTime fimExpediente = obterConfiguracao().getFimExpediente();
 
-        // Verificar se o horário atual está dentro do horário de funcionamento permitido
-        Assert.isTrue(!LocalTime.from(movimentacao.getEntrada())
-                        .isBefore(obterConfiguracao().getInicioExpediente()),
+        boolean isWithinExpediente = !entrada.isBefore(inicioExpediente) && !entrada.isAfter(fimExpediente);
+        Assert.isTrue(isWithinExpediente,
                 "Erro: Horário inválido. O horário atual está fora do intervalo de funcionamento permitido. "
-                        + "Horário de funcionamento: das "
-                        + obterConfiguracao().getInicioExpediente() + " às "
-                        + obterConfiguracao().getFimExpediente() + ".");
-
-        Assert.isTrue(!LocalTime.from(movimentacao.getEntrada())
-                        .isAfter(obterConfiguracao().getFimExpediente()),
-                "Erro: Horário inválido. O horário atual está fora do intervalo de funcionamento permitido. "
-                        + "Horário de funcionamento: das "
-                        + obterConfiguracao().getInicioExpediente() + " às "
-                        + obterConfiguracao().getFimExpediente() + ".");
+                        + "Horário de funcionamento: das " + inicioExpediente + " às " + fimExpediente + ".");
 
     }
 
@@ -217,13 +210,9 @@ public class MovimentacaoService {
                         .multiply(movimentacao.getValorHora()
                                 .divide(new BigDecimal(60), RoundingMode.HALF_UP)));
 
-        if (obterConfiguracao().getGerarDesconto()) {
-            BigDecimal valorTotal = (valorHorasEstacionadas.add(movimentacao.getValorMulta()))
-                    .subtract(movimentacao.getValorDesconto());
-            movimentacao.setValorTotal(valorTotal);
-        } else {
-            movimentacao.setValorDesconto(new BigDecimal("0.00"));
-        }
+        BigDecimal valorTotal = (valorHorasEstacionadas.add(movimentacao.getValorMulta()))
+                .subtract(movimentacao.getValorDesconto());
+        movimentacao.setValorTotal(valorTotal);
 
     }
 
@@ -320,13 +309,36 @@ public class MovimentacaoService {
                 movimentacao.setTempoDesconto(condutor.getTempoDescontoHoras());
             }
 
-            int tempoDesconto = movimentacao.getTempoDesconto();
-            BigDecimal valorDesconto = BigDecimal.valueOf(tempoDesconto).multiply(movimentacao.getValorHora());
+            if (obterConfiguracao().getGerarDesconto()) {
+                int tempoDesconto = movimentacao.getTempoDesconto();
+                BigDecimal valorDesconto = BigDecimal.valueOf(tempoDesconto).multiply(movimentacao.getValorHora());
+                movimentacao.setValorDesconto(valorDesconto);
 
-            movimentacao.setValorDesconto(valorDesconto);
-
+            } else {
+                movimentacao.setValorDesconto(new BigDecimal("0.00"));
+            }
         }
 
+    }
+
+    private void verificarVagasDisponiveis(Movimentacao movimentacao) {
+        Tipo tipoVeiculo = veiculoRepository.getTipoVeiculo(movimentacao.getVeiculo().getId());
+
+        List<Movimentacao> qtdeVeiculo = movimentacaoRepository.findByVeiculoTipo(tipoVeiculo);
+
+        int vagasOccupadas = qtdeVeiculo.size();
+
+        int vagasDisponiveis = switch (tipoVeiculo) {
+            case MOTO -> obterConfiguracao().getVagasMoto() - vagasOccupadas;
+            case CARRO -> obterConfiguracao().getVagasCarro() - vagasOccupadas;
+            case VAN -> obterConfiguracao().getVagasVan() - vagasOccupadas;
+            default -> throw new IllegalArgumentException("Tipo de veículo inválido.");
+        };
+
+        if (vagasDisponiveis <= 0) {
+            throw new IllegalArgumentException("Não há vagas disponíveis para " +
+                    veiculoRepository.getTipoVeiculo(movimentacao.getVeiculo().getId()).toString());
+        }
     }
 
     private void configurarValoresPadrao(Movimentacao movimentacao) {

@@ -30,4 +30,7 @@ public interface MovimentacaoRepository extends JpaRepository<Movimentacao, Long
     @Query(value = "SELECT * FROM movimentacoes WHERE veiculo_id = :id", nativeQuery = true)
     public List<Movimentacao> findByVeiculoId(@Param("id") Long id);
 
+    @Query("SELECT m FROM Movimentacao m JOIN m.veiculo v WHERE v.tipo = :tipo")
+    List<Movimentacao> findByVeiculoTipo(@Param("tipo") Tipo tipo);
+
 }

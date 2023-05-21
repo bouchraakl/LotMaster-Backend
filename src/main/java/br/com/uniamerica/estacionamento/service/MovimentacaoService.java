@@ -133,7 +133,7 @@ public class MovimentacaoService {
 
         // Verificar se o horário atual está dentro do horário de funcionamento permitido
         Assert.isTrue(!LocalTime.from(movimentacao.getEntrada())
-                      .isBefore(obterConfiguracao().getInicioExpediente()),
+                        .isBefore(obterConfiguracao().getInicioExpediente()),
                 "Erro: Horário inválido. O horário atual está fora do intervalo de funcionamento permitido. "
                         + "Horário de funcionamento: das "
                         + obterConfiguracao().getInicioExpediente() + " às "
@@ -217,9 +217,14 @@ public class MovimentacaoService {
                         .multiply(movimentacao.getValorHora()
                                 .divide(new BigDecimal(60), RoundingMode.HALF_UP)));
 
-        BigDecimal valorTotal = (valorHorasEstacionadas.add(movimentacao.getValorMulta()))
-                .subtract(movimentacao.getValorDesconto());
-        movimentacao.setValorTotal(valorTotal);
+        if (obterConfiguracao().getGerarDesconto()) {
+            BigDecimal valorTotal = (valorHorasEstacionadas.add(movimentacao.getValorMulta()))
+                    .subtract(movimentacao.getValorDesconto());
+            movimentacao.setValorTotal(valorTotal);
+        } else {
+            movimentacao.setValorDesconto(new BigDecimal("0.00"));
+        }
+
     }
 
     private void valoresCondutor(Movimentacao movimentacao) {

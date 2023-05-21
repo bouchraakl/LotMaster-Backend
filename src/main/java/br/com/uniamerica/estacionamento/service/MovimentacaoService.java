@@ -290,13 +290,13 @@ public class MovimentacaoService {
             int tempoPagoHoras = condutor.getTempoPagoHoras();
             int tempoHoras = movimentacao.getTempoHoras();
 
-            int currentMultiple50 = tempoPagoHoras / 50;
-            int nextMultiple50 = (tempoPagoHoras + tempoHoras) / 50;
+            int currentMultiple = tempoPagoHoras / obterConfiguracao().getTempoParaDesconto();
+            int nextMultiple = (tempoPagoHoras + tempoHoras) / obterConfiguracao().getTempoParaDesconto();
 
             // Verificar se o próximo múltiplo de 50 horas foi atingido
-            if (nextMultiple50 > currentMultiple50) {
-                int numNewMultiples = nextMultiple50 - currentMultiple50;
-                int descontoToAdd = numNewMultiples * 5;
+            if (nextMultiple > currentMultiple) {
+                int numNewMultiples = nextMultiple - currentMultiple;
+                int descontoToAdd = numNewMultiples * obterConfiguracao().getTempoDeDesconto().getHour();
 
                 // Adicionar o desconto ao condutor e à movimentação
                 int currentDesconto = condutor.getTempoDescontoHoras();

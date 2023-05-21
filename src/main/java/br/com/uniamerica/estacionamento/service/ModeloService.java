@@ -80,6 +80,9 @@ public class ModeloService {
         Assert.isTrue(marcaRepository.existsById(modelo.getMarca().getId()),
                 "Não foi possível salvar o modelo, pois a marca associada não foi encontrada.");
 
+        final List<Marca> isActive = marcaRepository.findActiveElement(modelo.getMarca().getId());
+        Assert.isTrue(!isActive.isEmpty(), "A marca associada a esse modelo está inativa.");
+
         this.modeloRepository.save(modelo);
 
     }

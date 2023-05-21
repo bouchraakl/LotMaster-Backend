@@ -53,7 +53,7 @@ public class ModeloController {
     public ResponseEntity<?> findModeloAtivos() {
         List<Modelo> modeloList = this.modeloRepository.findAllAtivo();
         if (modeloList == null || modeloList.isEmpty()) {
-            return ResponseEntity.badRequest().body("Não tem nem um veiculo ativo");
+            return ResponseEntity.badRequest().body("Não tem nem um modelo ativo");
         } else {
             return ResponseEntity.ok(modeloList);
         }

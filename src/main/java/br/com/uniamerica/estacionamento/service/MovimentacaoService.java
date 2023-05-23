@@ -287,20 +287,23 @@ public class MovimentacaoService {
     }
 
     private void manageDesconto(Movimentacao movimentacao) {
+
         // Obter o condutor da movimentação
         Condutor condutor = condutorRepository.findById(movimentacao.getCondutor().getId()).orElse(null);
 
         if (condutor != null) {
+
             int tempoPagoHoras = condutor.getTempoPagoHoras();
             int tempoHoras = movimentacao.getTempoHoras();
 
-            int currentMultiple = tempoPagoHoras / obterConfiguracao().getTempoParaDesconto();
-            int nextMultiple = (tempoPagoHoras + tempoHoras) / obterConfiguracao().getTempoParaDesconto();
+            int currentMultiple = tempoPagoHoras / 50;
+            int nextMultiple = (tempoPagoHoras + tempoHoras) / 50;
 
             // Verificar se o próximo múltiplo de 50 horas foi atingido
             if (nextMultiple > currentMultiple) {
+
                 int numNewMultiples = nextMultiple - currentMultiple;
-                int descontoToAdd = numNewMultiples * obterConfiguracao().getTempoDeDesconto().getHour();
+                int descontoToAdd = numNewMultiples * 5;
 
                 // Adicionar o desconto ao condutor e à movimentação
                 int currentDesconto = condutor.getTempoDescontoHoras();

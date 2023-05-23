@@ -43,7 +43,7 @@ public class ModeloService {
     @Transactional
     public void validarCadastroModelo(Modelo modelo) {
         modelo.setCadastro(LocalDateTime.now());
-        validarNomeModelo(modelo.getNome());
+        validarNomeModelo(modelo);
         validarIdMarca(modelo.getMarca().getId());
         validarMarcaAtiva(modelo.getMarca().getId());
         modeloRepository.save(modelo);
@@ -61,6 +61,8 @@ public class ModeloService {
         validarIdModelo(modelo.getId());
         validarIdMarca(modelo.getMarca().getId());
         validarMarcaAtiva(modelo.getMarca().getId());
+        List<Modelo> findbyNome = modeloRepository.findByNome(modelo.getNome());
+        Assert.isTrue(findbyNome.isEmpty(),"Nome ja existe no banco de dados.");
         modeloRepository.save(modelo);
     }
 
@@ -78,13 +80,15 @@ public class ModeloService {
     /**
      * Validates if a modelo name is already registered in the database.
      *
-     * @param nome The name of the modelo to be validated.
+     * @param modelo the modelo to be validated.
      * @throws IllegalArgumentException If a modelo with the provided name already exists.
      */
-    private void validarNomeModelo(String nome) {
-        Assert.isTrue(modeloRepository.findByNome(nome).isEmpty(),
-                "A modelo with the provided name already exists. " +
-                        "Please verify the entered data and try again.");
+    private void validarNomeModelo(Modelo modelo) {
+        // Verificar se o nome do modelo já existe no banco de dados
+        final List<Modelo> modelosByNome = this.modeloRepository.findByNome(modelo.getNome());
+        Assert.isTrue(modelosByNome.isEmpty(),
+                "Um modelo já está registrado com o nome informado. " +
+                        "Por favor, verifique os dados informados e tente novamente.");
     }
 
     /**
@@ -94,9 +98,9 @@ public class ModeloService {
      * @throws IllegalArgumentException If the marca ID is not provided or does not exist in the database.
      */
     private void validarIdMarca(Long marcaId) {
-        Assert.notNull(marcaId, "The marca ID in modelo cannot be null.");
+        Assert.notNull(marcaId, "O ID da marca em modelo não pode ser nulo.");
         Assert.isTrue(marcaRepository.existsById(marcaId),
-                "Unable to save the modelo because the associated marca was not found.");
+                "Não foi possível salvar o modelo, pois a marca associada não foi encontrada.");
     }
 
     /**
@@ -107,7 +111,7 @@ public class ModeloService {
      */
     private void validarMarcaAtiva(Long marcaId) {
         final List<Marca> isActive = marcaRepository.findActiveElement(marcaId);
-        Assert.isTrue(!isActive.isEmpty(), "The marca associated with this modelo is inactive.");
+        Assert.isTrue(!isActive.isEmpty(), "A marca associada a esse modelo está inativa.");
     }
 
     /**
@@ -118,10 +122,8 @@ public class ModeloService {
      */
     private void validarIdModelo(Long modeloId) {
         Assert.notNull(modeloId,
-                "The provided modelo ID is null. " +
-                        "Please ensure that the modelo object has a valid ID before performing this operation.");
+                "ID do modelo nao pode ser nulo.");
         Assert.isTrue(modeloRepository.existsById(modeloId),
-                "The specified modelo ID was not found in the database. " +
-                        "Please verify that the ID is correct and try again.");
+                "Não foi possível apagar o modelo, pois oID  não foi encontrado.");
     }
 }

@@ -1,7 +1,4 @@
-/* -------------------Package--------------------------- */
 package br.com.uniamerica.estacionamento.controller;
-
-/* -------------------Imports--------------------------- */
 
 import br.com.uniamerica.estacionamento.entity.Marca;
 import br.com.uniamerica.estacionamento.repository.MarcaRepository;
@@ -14,9 +11,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-/* ----------------------------------------------------- */
 @RestController
-@RequestMapping(value = "api/marca")
+@RequestMapping("api/marca")
 public class MarcaController {
 
     @Autowired
@@ -28,43 +24,64 @@ public class MarcaController {
     @Autowired
     private MarcaService marcaService;
 
-    /* -------------------get by id--------------------------- */
+    /**
+     * Retrieves a Marca by ID.
+     *
+     * @param id The ID of the Marca to retrieve.
+     * @return ResponseEntity with the Marca if found, otherwise a bad request response.
+     */
     @GetMapping
     public ResponseEntity<?> getByIdRequest(@RequestParam("id") final Long id) {
-        final Marca marca = this.marcaRepository.findById(id).orElse(null);
+        final Marca marca = marcaRepository.findById(id).orElse(null);
         return marca == null ? ResponseEntity.badRequest().body("ID não encontrado") : ResponseEntity.ok(marca);
     }
 
-    /* -------------------get all--------------------------- */
+    /**
+     * Retrieves all Marcas.
+     *
+     * @return ResponseEntity with a list of all Marcas.
+     */
     @GetMapping("/all")
-    public ResponseEntity<?> getallRequest() {
-        return ResponseEntity.ok(this.marcaRepository.findAll());
+    public ResponseEntity<?> getAllRequest() {
+        return ResponseEntity.ok(marcaRepository.findAll());
     }
 
-    /* -------------------get by ativo--------------------------- */
+    /**
+     * Retrieves active Marcas.
+     *
+     * @return ResponseEntity with a list of active Marcas.
+     */
     @GetMapping("/ativos")
     public ResponseEntity<?> findMarcasAtivas() {
-        return ResponseEntity.ok(this.marcaRepository.findAllAtivo());
+        return ResponseEntity.ok(marcaRepository.findAllAtivo());
     }
 
-    /* -------------------post--------------------------- */
+    /**
+     * Registers a new Marca.
+     *
+     * @param marca The Marca object to register.
+     * @return ResponseEntity indicating the success or failure of the operation.
+     */
     @PostMapping
     public ResponseEntity<?> registerMarca(@RequestBody @Validated final Marca marca) {
         try {
-            this.marcaService.validarCadastroMarca(marca);
+            marcaService.validarCadastroMarca(marca);
             return ResponseEntity.ok("Marca registrada com sucesso");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    /* -------------------put--------------------------- */
+    /**
+     * Updates an existing Marca.
+     *
+     * @param marca The updated Marca object.
+     * @return ResponseEntity indicating the success or failure of the operation.
+     */
     @PutMapping
-    public ResponseEntity<?> editarMarca(
-            @RequestBody @Validated final Marca marca
-    ) {
+    public ResponseEntity<?> editarMarca(@RequestBody @Validated final Marca marca) {
         try {
-            this.marcaService.validarUpdateMarca(marca);
+            marcaService.validarUpdateMarca(marca);
             return ResponseEntity.ok("Registro atualizado com sucesso");
         } catch (DataIntegrityViolationException e) {
             return ResponseEntity.internalServerError().body("Error: " + e.getCause().getCause().getMessage());
@@ -73,26 +90,29 @@ public class MarcaController {
         }
     }
 
-    /* -------------------delete--------------------------- */
+    /**
+     * Deletes a Marca by ID.
+     *
+     * @param id The ID of the Marca to delete.
+     * @return ResponseEntity indicating the success or failure of the operation.
+     */
     @DeleteMapping
-    public ResponseEntity<?> exluirMarca(@RequestParam("id") final Long id) {
+    public ResponseEntity<?> excluirMarca(@RequestParam("id") final Long id) {
         try {
-            this.marcaService.validarDeleteMarca(id);
-            final Marca marcaBanco = this.marcaRepository.findById(id).
-                    orElseThrow(() -> new RuntimeException("Marca não encontrada"));
-            if (!this.modeloRepository.findByMarcaId(id).isEmpty()) {
+            marcaService.validarDeleteMarca(id);
+            final Marca marcaBanco = marcaRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Marca não encontrada"));
+
+            if (!modeloRepository.findByMarcaId(id).isEmpty()) {
                 marcaBanco.setAtivo(false);
-                this.marcaRepository.save(marcaBanco);
-                return ResponseEntity.ok("Registro Desativado com sucesso!");
+                marcaRepository.save(marcaBanco);
+                return ResponseEntity.ok("Registro desativado com sucesso!");
             } else {
-                this.marcaRepository.delete(marcaBanco);
+                marcaRepository.delete(marcaBanco);
                 return ResponseEntity.ok("Registro apagado com sucesso!");
             }
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-
     }
-
-
 }

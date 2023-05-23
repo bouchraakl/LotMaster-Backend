@@ -1,7 +1,4 @@
-//------------------Package----------------------
 package br.com.uniamerica.estacionamento.service;
-
-//------------------Imports----------------------
 
 import br.com.uniamerica.estacionamento.entity.Marca;
 import br.com.uniamerica.estacionamento.repository.MarcaRepository;
@@ -12,78 +9,76 @@ import org.springframework.util.Assert;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-/*
-- Essa classe é responsável por realizar validações de dados relacionados a marcas.
-- Todas as validações são realizadas através de métodos que são executados quando um
-  cadastro, atualização ou exclusão de marca é solicitado.
-*/
+/**
+ * Service class responsible for performing validations related to car brands (marcas).
+ */
 @Service
 public class MarcaService {
 
+    private final MarcaRepository marcaRepository;
+
     @Autowired
-    private MarcaRepository marcaRepository;
-
-    /**
-     * Valida o cadastro de uma nova Marca.
-     *
-     * @param marca objeto Marca a ser validado
-     * @throws IllegalArgumentException caso o nome da Marca já exista no banco de dados ou não tenha sido informada
-     */
-    @Transactional
-    public void validarCadastroMarca(Marca marca) {
-
-        marca.setCadastro(LocalDateTime.now());
-
-        // Verificar se a marca já existe no banco de dados
-        List<Marca> marcasByNome = marcaRepository.findByNome(marca.getNome());
-        Assert.isTrue(marcasByNome.isEmpty(),
-                "Uma marca já está registrada com o nome informado. " +
-                        "Por favor, verifique os dados informados e tente novamente.");
-
-        this.marcaRepository.save(marca);
-
+    public MarcaService(MarcaRepository marcaRepository) {
+        this.marcaRepository = marcaRepository;
     }
 
     /**
-     * Valida a atualização de uma Marca existente.
+     * Validates the registration of a new brand.
      *
-     * @param marca objeto Marca a ser validado
-     * @throws IllegalArgumentException caso o ID da Marca não tenha sido informado ou o nome já exista no banco de dados
+     * @param marca The brand object to be validated.
+     * @throws IllegalArgumentException if the brand name already exists in the database or if it is not provided.
+     */
+    @Transactional
+    public void validarCadastroMarca(Marca marca) {
+        setTimestamps(marca);
+
+        List<Marca> marcaExistente = marcaRepository.findByNome(marca.getNome());
+        Assert.isTrue(marcaExistente.isEmpty(),
+                "Já existe uma marca registrada com o nome informado. " +
+                        "Verifique os dados informados e tente novamente.");
+
+        marcaRepository.save(marca);
+    }
+
+    /**
+     * Validates the update of an existing brand.
+     *
+     * @param marca The brand object to be validated.
+     * @throws IllegalArgumentException if the brand ID is not provided or if the brand name already exists in the database.
      */
     @Transactional
     public void validarUpdateMarca(Marca marca) {
+        setTimestamps(marca);
 
-        marca.setAtualizacao(LocalDateTime.now());
-
-        // Verificar se o marca existe no banco de dados
         Assert.notNull(marca.getId(),
                 "O ID da marca fornecido é nulo. " +
                         "Certifique-se de que o objeto da marca tenha um ID válido antes de realizar essa operação.");
 
-        // Verifica se ID do condutor existe no banco de dados
         Assert.isTrue(marcaRepository.existsById(marca.getId()),
-                "O ID da marca especificadoa não foi encontrado na base de dados. " +
-                        "Por favor, verifique se o ID está correto e tente novamente.");
+                "O ID da marca especificada não foi encontrado na base de dados. " +
+                        "Verifique se o ID está correto e tente novamente.");
 
-        this.marcaRepository.save(marca);
-
+        marcaRepository.save(marca);
     }
 
     /**
-     * Valida a exclusão de uma Marca existente.
+     * Validates the deletion of an existing brand.
      *
-     * @param id ID da Marca a ser validada
-     * @throws IllegalArgumentException caso o ID não exista no banco de dados
+     * @param id The ID of the brand to be validated.
+     * @throws IllegalArgumentException if the ID does not exist in the database.
      */
     @Transactional
     public void validarDeleteMarca(Long id) {
-
-        // Verificar se a marca com o ID fornecido existe no banco de dados
         Assert.isTrue(marcaRepository.existsById(id),
                 "O ID da marca especificada não foi encontrada na base de dados. " +
-                        "Por favor, verifique se o ID está correto e tente novamente.");
-
+                        "Verifique se o ID está correto e tente novamente.");
     }
 
+    private void setTimestamps(Marca marca) {
+        LocalDateTime now = LocalDateTime.now();
+        marca.setCadastro(now);
+        marca.setAtualizacao(now);
+    }
 }

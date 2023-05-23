@@ -1,32 +1,26 @@
-/* -------------------Package--------------------------- */
 package br.com.uniamerica.estacionamento.entity;
 
-/* -------------------Imports--------------------------- */
-
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
 
-/* ----------------------------------------------------- */
 @Entity
 @Audited
 @Table(name = "modelos", schema = "public")
-@AuditTable(value = "modelos_audit",schema = "audit")
+@AuditTable(value = "modelos_audit", schema = "audit")
 public class Modelo extends AbstractEntity {
 
     @Getter
     @Setter
-    @Column(name = "nome", nullable = false, unique = true,length = 40)
+    @Column(name = "nome", nullable = false, unique = true, length = 40)
     @NotNull(message = "O nome do modelo não pode ser nulo.")
     @NotBlank(message = "O nome do modelo não pode ser vazio.")
-    @Size(min = 2,max = 40,message = "O nome do condutor deve ter no minimo 2 caracteres e no máximo 40 caracteres.")
-    @Pattern(regexp = "^[a-zA-Z0-9]*$", message = "Caracteres especiais não são permitidos no campo 'nome'")
+    @Size(min = 2, max = 40, message = "O nome do condutor deve ter no mínimo 2 caracteres e no máximo 40 caracteres.")
+    @Pattern(regexp = "^[a-zA-Z0-9\\s]*$", message = "Caracteres especiais não são permitidos no campo 'nome'")
     private String nome;
 
     @Getter
@@ -41,5 +35,4 @@ public class Modelo extends AbstractEntity {
     public void prePersistAndUpdate() {
         this.nome = this.nome.toLowerCase();
     }
-
 }

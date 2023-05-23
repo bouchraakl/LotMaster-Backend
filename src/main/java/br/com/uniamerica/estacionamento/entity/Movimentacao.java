@@ -1,11 +1,8 @@
-/* -------------------Package--------------------------- */
 package br.com.uniamerica.estacionamento.entity;
 
-/* -------------------Imports--------------------------- */
-
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.envers.AuditTable;
@@ -13,13 +10,11 @@ import org.hibernate.envers.Audited;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
-/* ----------------------------------------------------- */
 @Entity
 @Audited
 @Table(name = "movimentacoes", schema = "public")
-@AuditTable(value = "movimentacoes_audit",schema = "audit")
+@AuditTable(value = "movimentacoes_audit", schema = "audit")
 public class Movimentacao extends AbstractEntity {
 
     @Getter
@@ -96,5 +91,4 @@ public class Movimentacao extends AbstractEntity {
     @Setter
     @Column(name = "valorhora_multa")
     private BigDecimal valorHoraMulta;
-
 }

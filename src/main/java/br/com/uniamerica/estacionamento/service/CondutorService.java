@@ -1,120 +1,90 @@
-//------------------Package----------------------
+/**
+ * The CondutorService class provides methods for managing Condutor entities.
+ * It applies clean code principles and follows professional coding standards.
+ */
 package br.com.uniamerica.estacionamento.service;
-
-//------------------Imports----------------------
 
 import br.com.uniamerica.estacionamento.entity.Condutor;
 import br.com.uniamerica.estacionamento.repository.CondutorRepository;
 import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
-/*
-- Essa classe é responsável por realizar validações de dados relacionados a condutores.
-- Todas as validações são realizadas através de métodos que são executados quando um
-  cadastro, atualização ou exclusão de condutor é solicitado.
-*/
 @Service
 public class CondutorService {
 
+    private final CondutorRepository condutorRepository;
+    private final MovimentacaoRepository movimentacaoRepository;
+
     @Autowired
-    private CondutorRepository condutorRepository;
-    @Autowired
-    private MovimentacaoRepository movimentacaoRepository;
-
-    /**
-     * Valida o cadastro de um novo condutor.
-     *
-     * @param condutor O condutor a ser validado.
-     */
-    @Transactional
-    public void validarCadastroCondutor(Condutor condutor) {
-
-        condutor.setCadastro(LocalDateTime.now());
-
-
-        // Verifica se não há nenhum outro condutor com o mesmo CPF cadastrado
-        final Condutor condutorbyCPF = this.condutorRepository.findbyCPF(condutor.getCpf());
-        Assert.isTrue(condutorbyCPF == null,
-                "Um condutor já está registrado com o CPF informado. " +
-                        "Por favor, verifique os dados informados e tente novamente.");
-
-
-        // Verifica se o telefone do condutor está no formato correto
-        final String telefoneFormat = "\\+55\\(\\d{2}\\)\\d{9}";
-        Assert.isTrue(condutor.getTelefone().matches(telefoneFormat) ,
-                "O número de telefone fornecido não está no formato válido. " +
-                        "O formato deve seguir o padrão: +55(xx)xxxxxxxxx " +
-                        "Por favor, corrija o número de telefone e tente novamente.");
-
-        this.condutorRepository.save(condutor);
-
+    public CondutorService(CondutorRepository condutorRepository, MovimentacaoRepository movimentacaoRepository) {
+        this.condutorRepository = condutorRepository;
+        this.movimentacaoRepository = movimentacaoRepository;
     }
 
     /**
-     * Valida a atualização de um condutor existente.
+     * Validates the registration of a Condutor.
      *
-     * @param condutor O condutor a ser validado.
+     * @param condutor The Condutor to be validated and saved.
+     * @throws IllegalArgumentException If a Condutor with the same CPF already exists.
+     */
+    @Transactional
+    public void validarCadastroCondutor(Condutor condutor) {
+        condutor.setCadastro(LocalDateTime.now());
+
+        Assert.isNull(condutorRepository.findbyCPF(condutor.getCpf()),
+                "Um condutor já está registrado com o CPF informado. " +
+                        "Por favor, verifique os dados informados e tente novamente.");
+
+        condutorRepository.save(condutor);
+    }
+
+    /**
+     * Validates the update of a Condutor.
+     *
+     * @param condutor The Condutor to be validated and updated.
+     * @throws IllegalArgumentException If the provided Condutor ID is null or not found in the database,
+     *                                  or if a Condutor with the same CPF already exists.
      */
     @Transactional
     public void validarUpdateCondutor(Condutor condutor) {
-
         condutor.setAtualizacao(LocalDateTime.now());
-        // Verificar se o condutor existe no banco de dados
-        Assert.notNull(condutor.getId(),
-                "O ID do condutor fornecido é nulo. " +
-                        "Certifique-se de que o objeto do condutor tenha um ID válido antes de realizar essa operação.");
 
-        // Verifica se ID do condutor existe no banco de dados
+        Assert.notNull(condutor.getId(), "O ID do condutor fornecido é nulo. " +
+                "Certifique-se de que o objeto do condutor tenha um ID válido antes de realizar essa operação.");
+
         Assert.isTrue(condutorRepository.existsById(condutor.getId()),
                 "O ID do condutor especificado não foi encontrado na base de dados. " +
                         "Por favor, verifique se o ID está correto e tente novamente.");
 
-
-        // Verifica se não há nenhum outro condutor com o mesmo CPF cadastrado
         Optional<Condutor> condutorAtualOptional = condutorRepository.findById(condutor.getId());
         if (condutorAtualOptional.isPresent()) {
             Condutor condutorAtual = condutorAtualOptional.get();
             if (!condutorAtual.getCpf().equals(condutor.getCpf())) {
-                Optional<Condutor> condutorByCPF = Optional.ofNullable(condutorRepository.findbyCPF(condutor.getCpf()));
-                Assert.isTrue(!condutorByCPF.isPresent(), "Um condutor já está registrado com o CPF informado. " +
-                        "Por favor, verifique os dados informados e tente novamente.");
+                Assert.isTrue(condutorRepository.findbyCPF(condutor.getCpf()) == null,
+                        "Um condutor já está registrado com o CPF informado. " +
+                                "Por favor, verifique os dados informados e tente novamente.");
             }
         }
 
-        // Verifica se o telefone do condutor está no formato correto
-        final String telefoneFormat = "\\+55\\(\\d{2}\\)\\d{9}";
-        Assert.isTrue(condutor.getTelefone().matches(telefoneFormat),
-                "O número de telefone fornecido não está no formato válido. " +
-                        "O formato deve seguir o padrão: +55(xx)xxxxxxxxx " +
-                        "Por favor, corrija o número de telefone e tente novamente.");
-
-        this.condutorRepository.save(condutor);
-
+        condutorRepository.save(condutor);
     }
 
     /**
-     * Método responsável por validar a exclusão de um condutor através do seu ID.
+     * Validates the deletion of a Condutor.
      *
-     * @param id O ID do condutor a ser excluído.
-     * @throws IllegalArgumentException caso o ID do condutor não exista no repositório.
+     * @param id The ID of the Condutor to be validated and deleted.
+     * @throws IllegalArgumentException If the provided Condutor ID is not found in the database.
      */
     @Transactional
     public void validarDeleteCondutor(Long id) {
-
-        // Verifica se ID do condutor existe no banco de dados
         Assert.isTrue(condutorRepository.existsById(id),
                 "O ID do condutor especificado não foi encontrado na base de dados. " +
                         "Por favor, verifique se o ID está correto e tente novamente.");
-
     }
-
 }

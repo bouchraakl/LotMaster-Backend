@@ -100,22 +100,13 @@ public class VeiculoController {
      * @return ResponseEntity indicating the success or failure of the operation.
      */
     @DeleteMapping
-    public ResponseEntity<?> excluirVeiculo(@RequestParam("id") final Long id) {
+    public ResponseEntity<?> excluirCondutor(@RequestParam("id") final Long id) {
         try {
             veiculoService.validarDeleteVeiculo(id);
-            final Veiculo veiculo = veiculoRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Veiculo não encontrado"));
-
-            if (!movimentacaoRepository.findByCondutorId(id).isEmpty()) {
-                veiculo.setAtivo(false);
-                veiculoRepository.save(veiculo);
-                return ResponseEntity.ok("Registro Desativado com sucesso!");
-            } else {
-                veiculoRepository.delete(veiculo);
-                return ResponseEntity.ok("Registro apagado com sucesso!");
-            }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.ok("Registro apagado com sucesso");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
         }
     }
+
 }

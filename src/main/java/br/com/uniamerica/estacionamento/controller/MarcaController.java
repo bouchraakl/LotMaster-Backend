@@ -97,22 +97,12 @@ public class MarcaController {
      * @return ResponseEntity indicating the success or failure of the operation.
      */
     @DeleteMapping
-    public ResponseEntity<?> excluirMarca(@RequestParam("id") final Long id) {
+    public ResponseEntity<?> excluirCondutor(@RequestParam("id") final Long id) {
         try {
             marcaService.validarDeleteMarca(id);
-            final Marca marcaBanco = marcaRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Marca não encontrada"));
-
-            if (!modeloRepository.findByMarcaId(id).isEmpty()) {
-                marcaBanco.setAtivo(false);
-                marcaRepository.save(marcaBanco);
-                return ResponseEntity.ok("Registro desativado com sucesso!");
-            } else {
-                marcaRepository.delete(marcaBanco);
-                return ResponseEntity.ok("Registro apagado com sucesso!");
-            }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.ok("Registro apagado com sucesso");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
         }
     }
 }

@@ -97,19 +97,9 @@ public class CondutorController {
     public ResponseEntity<?> excluirCondutor(@RequestParam("id") final Long id) {
         try {
             condutorService.validarDeleteCondutor(id);
-            final Condutor condutorBanco = condutorRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Condutor não encontrado"));
-
-            if (!movimentacaoRepository.findByCondutorId(id).isEmpty()) {
-                condutorBanco.setAtivo(false);
-                condutorRepository.save(condutorBanco);
-                return ResponseEntity.ok("Registro desativado com sucesso!");
-            } else {
-                condutorRepository.delete(condutorBanco);
-                return ResponseEntity.ok("Registro apagado com sucesso!");
-            }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.ok("Registro apagado com sucesso");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
         }
     }
 }

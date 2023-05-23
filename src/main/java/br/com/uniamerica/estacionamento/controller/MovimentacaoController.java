@@ -90,22 +90,12 @@ public class MovimentacaoController {
      * @return ResponseEntity indicating the success or failure of the operation.
      */
     @DeleteMapping
-    public ResponseEntity<?> excluirMovimentacao(@RequestParam("id") final Long id) {
+    public ResponseEntity<?> excluirCondutor(@RequestParam("id") final Long id) {
         try {
             movimentacaoService.validarDeleteMovimentacao(id);
-            final Movimentacao movimentacao = movimentacaoRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Movimentacao não encontrada"));
-
-            if (!movimentacaoRepository.findByCondutorId(id).isEmpty()) {
-                movimentacao.setAtivo(false);
-                movimentacaoRepository.save(movimentacao);
-                return ResponseEntity.ok("Registro Desativado com sucesso!");
-            } else {
-                movimentacaoRepository.delete(movimentacao);
-                return ResponseEntity.ok("Registro apagado com sucesso!");
-            }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.ok("Registro apagado com sucesso");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
         }
     }
 }

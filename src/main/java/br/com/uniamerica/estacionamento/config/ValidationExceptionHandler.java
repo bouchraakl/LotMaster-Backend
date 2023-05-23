@@ -11,11 +11,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestControllerAdvice
-public class ExceptionHandlerAdvice {
+public class ValidationExceptionHandler {
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    /**
+     * Handles MethodArgumentNotValidException and returns a map of field errors.
+     *
+     * @param ex The MethodArgumentNotValidException to handle.
+     * @return Map of field errors.
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Map<String, String> handlelValidationExeption(MethodArgumentNotValidException ex){
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleValidationException(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
@@ -26,5 +32,4 @@ public class ExceptionHandlerAdvice {
 
         return errors;
     }
-
 }

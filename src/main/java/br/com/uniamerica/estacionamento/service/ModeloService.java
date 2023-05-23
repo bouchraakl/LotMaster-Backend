@@ -1,7 +1,4 @@
-//------------------Package----------------------
 package br.com.uniamerica.estacionamento.service;
-
-//------------------Imports----------------------
 
 import br.com.uniamerica.estacionamento.entity.Marca;
 import br.com.uniamerica.estacionamento.entity.Modelo;
@@ -15,103 +12,116 @@ import org.springframework.util.Assert;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/*
-- Essa classe é responsável por realizar validações de dados relacionados a modelos.
-- Todas as validações são realizadas através de métodos que são executados quando um
-  cadastro, atualização ou exclusão de modelo é solicitado.
-*/
+/**
+ * Service class responsible for performing data validations related to modelos.
+ * All validations are performed through methods that are executed when creating, updating, or deleting a modelo.
+ */
 @Service
 public class ModeloService {
 
-    @Autowired
-    private ModeloRepository modeloRepository;
-    @Autowired
-    private MarcaRepository marcaRepository;
+    private final ModeloRepository modeloRepository;
+    private final MarcaRepository marcaRepository;
 
     /**
-     * Verifica se as informações de um novo modelo estão corretas antes de serem cadastradas no banco de dados.
+     * Constructs a ModeloService with the specified repositories.
      *
-     * @param modelo O modelo a ser validado.
-     * @throws IllegalArgumentException Se as informações do modelo não estiverem corretas.
+     * @param modeloRepository The modelo repository.
+     * @param marcaRepository  The marca repository.
+     */
+    @Autowired
+    public ModeloService(ModeloRepository modeloRepository, MarcaRepository marcaRepository) {
+        this.modeloRepository = modeloRepository;
+        this.marcaRepository = marcaRepository;
+    }
+
+    /**
+     * Validates the information of a new modelo before it is saved to the database.
+     *
+     * @param modelo The modelo to be validated.
+     * @throws IllegalArgumentException If the modelo information is incorrect.
      */
     @Transactional
     public void validarCadastroModelo(Modelo modelo) {
-
         modelo.setCadastro(LocalDateTime.now());
-
-        // Verificar se o nome do modelo já existe no banco de dados
-        final List<Modelo> modelosByNome = this.modeloRepository.findByNome(modelo.getNome());
-        Assert.isTrue(modelosByNome.isEmpty(),
-                "Um modelo já está registrado com o nome informado. " +
-                        "Por favor, verifique os dados informados e tente novamente.");
-
-        // Verificar se o ID da marca foi informado e se ele existe no banco de dados
-        Assert.notNull(modelo.getMarca().getId(), "O ID da marca em modelo não pode ser nulo.");
-
-        Assert.isTrue(marcaRepository.existsById(modelo.getMarca().getId()),
-                "Não foi possível salvar o modelo, pois a marca associada não foi encontrada.");
-
-        final List<Marca> isActive = marcaRepository.findActiveElement(modelo.getMarca().getId());
-        Assert.isTrue(!isActive.isEmpty(), "A marca associada a esse modelo está inativa.");
-
-        this.modeloRepository.save(modelo);
-
+        validarNomeModelo(modelo.getNome());
+        validarIdMarca(modelo.getMarca().getId());
+        validarMarcaAtiva(modelo.getMarca().getId());
+        modeloRepository.save(modelo);
     }
 
     /**
-     * Verifica se as informações de um modelo já existente foram corretamente atualizadas.
+     * Validates the information of an existing modelo before it is updated.
      *
-     * @param modelo O modelo a ser validado.
-     * @throws IllegalArgumentException Se as informações do modelo não estiverem corretas.
+     * @param modelo The modelo to be validated.
+     * @throws IllegalArgumentException If the modelo information is incorrect.
      */
     @Transactional
     public void validarUpdateModelo(Modelo modelo) {
-
         modelo.setAtualizacao(LocalDateTime.now());
-
-        // Verificar se o modelo existe no banco de dados
-        Assert.notNull(modelo.getId(),
-                "O ID do modelo fornecido é nulo. " +
-                        "Certifique-se de que o objeto do modelo tenha um ID válido antes de realizar essa operação.");
-
-        // Verifica se ID do modelo existe no banco de dados
-        Assert.isTrue(modeloRepository.existsById(modelo.getId()),
-                "O ID do modelo especificado não foi encontrado na base de dados. " +
-                        "Por favor, verifique se o ID está correto e tente novamente.");
-
-        // Verificar se o ID da marca foi informado e se ele existe no banco de dados
-        Assert.notNull(modelo.getMarca().getId(), "ID marca não informado.");
-
-        Assert.isTrue(marcaRepository.existsById(modelo.getMarca().getId()),
-                "Não foi possível salvar o modelo, pois a marca associada não foi encontrada.");
-
-        final List<Marca> isActive = marcaRepository.findActiveElement(modelo.getMarca().getId());
-        Assert.isTrue(!isActive.isEmpty(), "A marca associada a esse modelo está inativa.");
-
-        this.modeloRepository.save(modelo);
-
+        validarIdModelo(modelo.getId());
+        validarIdMarca(modelo.getMarca().getId());
+        validarMarcaAtiva(modelo.getMarca().getId());
+        modeloRepository.save(modelo);
     }
 
     /**
-     * Verifica se as informações de um modelo a ser excluído estão corretas.
+     * Validates the information of a modelo to be deleted.
      *
-     * @param id O ID do modelo a ser validado.
-     * @throws IllegalArgumentException Se o ID do modelo não existir no banco de dados.
+     * @param id The ID of the modelo to be validated.
+     * @throws IllegalArgumentException If the modelo ID does not exist in the database.
      */
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarDeleteModelo(Long id) {
-
-        // Verificar se o ID do modelo existe no banco de dados
-        Assert.isTrue(modeloRepository.existsById(id),
-                "O ID do modelo especificado não foi encontrado na base de dados. " +
-                        "Por favor, verifique se o ID está correto e tente novamente.");
-
+        validarIdModelo(id);
     }
 
+    /**
+     * Validates if a modelo name is already registered in the database.
+     *
+     * @param nome The name of the modelo to be validated.
+     * @throws IllegalArgumentException If a modelo with the provided name already exists.
+     */
+    private void validarNomeModelo(String nome) {
+        Assert.isTrue(modeloRepository.findByNome(nome).isEmpty(),
+                "A modelo with the provided name already exists. " +
+                        "Please verify the entered data and try again.");
+    }
+
+    /**
+     * Validates if a marca ID is provided and exists in the database.
+     *
+     * @param marcaId The ID of the marca associated with the modelo.
+     * @throws IllegalArgumentException If the marca ID is not provided or does not exist in the database.
+     */
+    private void validarIdMarca(Long marcaId) {
+        Assert.notNull(marcaId, "The marca ID in modelo cannot be null.");
+        Assert.isTrue(marcaRepository.existsById(marcaId),
+                "Unable to save the modelo because the associated marca was not found.");
+    }
+
+    /**
+     * Validates if the marca associated with the modelo is active.
+     *
+     * @param marcaId The ID of the marca associated with the modelo.
+     * @throws IllegalArgumentException If the marca associated with the modelo is inactive.
+     */
+    private void validarMarcaAtiva(Long marcaId) {
+        final List<Marca> isActive = marcaRepository.findActiveElement(marcaId);
+        Assert.isTrue(!isActive.isEmpty(), "The marca associated with this modelo is inactive.");
+    }
+
+    /**
+     * Validates if a modelo ID exists in the database.
+     *
+     * @param modeloId The ID of the modelo to be validated.
+     * @throws IllegalArgumentException If the modelo ID does not exist in the database.
+     */
+    private void validarIdModelo(Long modeloId) {
+        Assert.notNull(modeloId,
+                "The provided modelo ID is null. " +
+                        "Please ensure that the modelo object has a valid ID before performing this operation.");
+        Assert.isTrue(modeloRepository.existsById(modeloId),
+                "The specified modelo ID was not found in the database. " +
+                        "Please verify that the ID is correct and try again.");
+    }
 }
-
-
-
-
-
-

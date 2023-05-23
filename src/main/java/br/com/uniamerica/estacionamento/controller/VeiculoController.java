@@ -1,7 +1,4 @@
-/* -------------------Package--------------------------- */
 package br.com.uniamerica.estacionamento.controller;
-
-/* -------------------Imports--------------------------- */
 
 import br.com.uniamerica.estacionamento.entity.Veiculo;
 import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
@@ -9,15 +6,13 @@ import br.com.uniamerica.estacionamento.repository.VeiculoRepository;
 import br.com.uniamerica.estacionamento.service.VeiculoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/* ----------------------------------------------------- */
 @RestController
-@RequestMapping(value = "api/veiculo")
+@RequestMapping("api/veiculo")
 public class VeiculoController {
 
     @Autowired
@@ -29,76 +24,89 @@ public class VeiculoController {
     @Autowired
     private MovimentacaoRepository movimentacaoRepository;
 
-    /* -------------------get by id--------------------------- */
+    /**
+     * Retrieves a Veiculo by ID.
+     *
+     * @param id The ID of the Veiculo to retrieve.
+     * @return ResponseEntity with the Veiculo if found, otherwise a bad request response.
+     */
     @GetMapping
     public ResponseEntity<?> findByIdRequest(@RequestParam("id") final Long id) {
-        final Veiculo veiculo = this.veiculoRepository.findById(id).orElse(null);
+        final Veiculo veiculo = veiculoRepository.findById(id).orElse(null);
         return veiculo == null ? ResponseEntity.badRequest().body("ID não encontrado") : ResponseEntity.ok(veiculo);
     }
 
-    /* -------------------get by all--------------------------- */
+    /**
+     * Retrieves all Veiculos.
+     *
+     * @return ResponseEntity with a list of all Veiculos.
+     */
     @GetMapping("/all")
-    public ResponseEntity<?> findByAllRequest() {
-        return ResponseEntity.ok(this.veiculoRepository.findAll());
+    public ResponseEntity<?> findAllRequest() {
+        return ResponseEntity.ok(veiculoRepository.findAll());
     }
 
-    /* -------------------get by ativo--------------------------- */
+    /**
+     * Retrieves active Veiculos.
+     *
+     * @return ResponseEntity with a list of active Veiculos.
+     */
     @GetMapping("/ativos")
-    public ResponseEntity<?> findVeiculosAtivas() {
-        List<Veiculo> veiculoList = this.veiculoRepository.findAllAtivo();
+    public ResponseEntity<?> findVeiculosAtivos() {
+        List<Veiculo> veiculoList = veiculoRepository.findAllAtivo();
         if (veiculoList == null || veiculoList.isEmpty()) {
-            return ResponseEntity.badRequest().body("Não tem nem um veiculo ativo");
+            return ResponseEntity.badRequest().body("Não tem nenhum veiculo ativo");
         } else {
             return ResponseEntity.ok(veiculoList);
         }
     }
 
-    /* -------------------post--------------------------- */
+    /**
+     * Registers a new Veiculo.
+     *
+     * @param veiculo The Veiculo object to register.
+     * @return ResponseEntity indicating the success or failure of the operation.
+     */
     @PostMapping
-    public ResponseEntity<?> registerVeiculos(@RequestBody @Validated final Veiculo veiculo) {
+    public ResponseEntity<?> registerVeiculo(@RequestBody @Validated final Veiculo veiculo) {
         try {
-            this.veiculoService.validarCadastroVeiculo(veiculo);
+            veiculoService.validarCadastroVeiculo(veiculo);
             return ResponseEntity.ok("Registro Cadastrado com Sucesso");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    /* -------------------put--------------------------- */
+    /**
+     * Updates an existing Veiculo.
+     *
+     * @param veiculo The updated Veiculo object.
+     * @return ResponseEntity indicating the success or failure of the operation.
+     */
     @PutMapping
-    public ResponseEntity<?> editarVeiculo(
-            @RequestBody @Validated final Veiculo veiculo
-    ) {
-
+    public ResponseEntity<?> editarVeiculo(@RequestBody @Validated final Veiculo veiculo) {
         try {
-            this.veiculoService.validarUpdateVeiculo(veiculo);
+            veiculoService.validarUpdateVeiculo(veiculo);
             return ResponseEntity.ok("Registro atualizado com sucesso");
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
-
     }
 
-    /* -------------------delete--------------------------- */
+    /**
+     * Deletes a Veiculo by ID.
+     *
+     * @param id The ID of the Veiculo to delete.
+     * @return ResponseEntity indicating the success or failure of the operation.
+     */
     @DeleteMapping
-    public ResponseEntity<?> exluirVeiculo(@RequestParam("id") final Long id) {
+    public ResponseEntity<?> excluirCondutor(@RequestParam("id") final Long id) {
         try {
-            this.veiculoService.validarDeleteVeiculo(id);
-            final Veiculo veiculoBanco = this.veiculoRepository.findById(id).
-                    orElseThrow(() -> new RuntimeException("Veiculo não encontrado"));
-            if (!this.movimentacaoRepository.findByCondutorId(id).isEmpty()) {
-                veiculoBanco.setAtivo(false);
-                this.veiculoRepository.save(veiculoBanco);
-                return ResponseEntity.ok("Registro Desativado com sucesso!");
-            } else {
-                this.veiculoRepository.delete(veiculoBanco);
-                return ResponseEntity.ok("Registro apagado com sucesso!");
-            }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            veiculoService.validarDeleteVeiculo(id);
+            return ResponseEntity.ok("Registro apagado com sucesso");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
         }
-
     }
-
 
 }

@@ -16,7 +16,7 @@ import java.util.List;
 public interface VeiculoRepository extends JpaRepository<Veiculo, Long> {
 
     @Query("FROM Veiculo WHERE placa = :placa")
-    public List<Veiculo> findByPlaca(@Param("placa") final String placa);
+    public Veiculo findByPlaca(@Param("placa") final String placa);
 
     @Query("from Veiculo where ativo = true")
     public List<Veiculo> findAllAtivo();

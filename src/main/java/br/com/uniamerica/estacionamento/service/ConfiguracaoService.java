@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.time.LocalDateTime;
+
 //------------------------------------------------
 @Service
 public class ConfiguracaoService {
@@ -19,12 +21,14 @@ public class ConfiguracaoService {
 
     @Transactional
     public void validarCadastroConfiguracao(final Configuracao configuracao) {
+        configuracao.setCadastro(LocalDateTime.now());
         this.configuracaoRepository.save(configuracao);
     }
 
     @Transactional(readOnly = true, rollbackFor = Exception.class)
     public void validarUpdateConfiguracao(Configuracao configuracao) {
 
+        configuracao.setAtualizacao(LocalDateTime.now());
         // Verificar se a configuracao existe no banco de dados
         Assert.notNull(configuracao.getId(),
                 "O ID da configuracao fornecido é nulo. " +

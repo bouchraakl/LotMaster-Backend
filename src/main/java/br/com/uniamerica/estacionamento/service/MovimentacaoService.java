@@ -14,12 +14,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
+import java.util.*;
 
 
 /*
@@ -56,6 +57,7 @@ public class MovimentacaoService {
     @Transactional
     public void validarCadastroMovimentacao(Movimentacao movimentacao) {
 
+        movimentacao.setCadastro(LocalDateTime.now());
         Configuracao configuracao = obterConfiguracao();
 
         BigDecimal valorMinutoMulta = configuracao.getValorMinutoMulta();
@@ -70,6 +72,7 @@ public class MovimentacaoService {
             Assert.isTrue(movimentacao.getEntrada().isBefore(movimentacao.getSaida()),
                     "O tempo de entrada deve ser posterior ao tempo de saída.");
             saidaOperations(movimentacao);
+            emitirRelatorio(movimentacao);
         } else {
             configurarValoresPadrao(movimentacao);
         }
@@ -85,6 +88,7 @@ public class MovimentacaoService {
     @Transactional
     public void validarUpdateMovimentacao(Movimentacao movimentacao) {
 
+        movimentacao.setAtualizacao(LocalDateTime.now());
         Assert.notNull(movimentacao.getId(), "O ID da movimentação fornecida é nulo.");
 
         Assert.isTrue(movimentacaoRepository.existsById(movimentacao.getId()),
@@ -96,11 +100,10 @@ public class MovimentacaoService {
 
 
         if (movimentacao.getSaida() != null) {
-
             Assert.isTrue(movimentacao.getEntrada().isBefore(movimentacao.getSaida()),
                     "O tempo de entrada deve ser posterior ao tempo de saída.");
-
             saidaOperations(movimentacao);
+            emitirRelatorio(movimentacao);
 
         } else {
             configurarValoresPadrao(movimentacao);
@@ -351,5 +354,34 @@ public class MovimentacaoService {
 
     }
 
+    private void emitirRelatorio(Movimentacao movimentacao) {
+
+        System.out.println(
+                "---------------------------Fechamento da Movimentação---------------------------" +
+                        "\n------------Informaçoes Sobre o Condutor------------" +
+                        "\n Nome do Condutor : " + movimentacao.getCondutor().getNome() +
+                        "\n Telefone do Condutor :" + movimentacao.getCondutor().getTelefone() +
+                        "\n Quantidade de Horas Desconto :" + movimentacao.getCondutor().getTempoDescontoHoras() +
+                        " horas" +
+                        "\n---------------------------------------------------------------------------------" +
+                        "\n------------Informaçoes Sobre o Veiculo------------" +
+                        "\n Placa do Carro : " + movimentacao.getVeiculo().getPlaca() +
+                        "\n Ano de Fabricação : " + movimentacao.getVeiculo().getAno() +
+                        "\n------------Informaçoes Sobre Movimentação Atual------------" +
+                        "\n Data de Entrada : " + movimentacao.getEntrada() +
+                        "\n Data de Saida : " + movimentacao.getSaida() +
+                        "\n Tempo Estacionado: " + LocalTime.of(movimentacao.getTempoHoras(),
+                        movimentacao.getTempoMinutos(), 0) +
+                        "\n Tempo Multa: " + LocalTime.of(movimentacao.getTempoMultaHoras(),
+                        movimentacao.getTempoMultaMinutes(), 0) +
+                        "\n Tempo de Desconto : " + LocalTime.of(movimentacao.getTempoDesconto(), 0, 0) +
+                        "\n------------Valores da Movimentação Atual------------" +
+                        "\n Valor da Multa : " + movimentacao.getValorMulta() +
+                        "\n Valor de Desconto : " + movimentacao.getValorDesconto() +
+                        "\n Valor Total : " + movimentacao.getValorTotal() +
+                        "\n---------------------------------------------------------------------------------"
+        );
+
+    }
 
 }

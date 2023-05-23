@@ -12,8 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.List;
+import java.util.Optional;
 
 /*
 - Essa classe é responsável por realizar validações de dados relacionados a veiculos.
@@ -40,9 +42,11 @@ public class VeiculoService {
     @Transactional
     public void validarCadastroVeiculo(Veiculo veiculo) {
 
+        veiculo.setCadastro(LocalDateTime.now());
+
         // Verifica se a placa já existe no banco de dados
-        final List<Veiculo> veiculoByPlaca = this.veiculoRepository.findByPlaca(veiculo.getPlaca());
-        Assert.isTrue(veiculoByPlaca.isEmpty(),
+        final Veiculo veiculoByPlaca = this.veiculoRepository.findByPlaca(veiculo.getPlaca());
+        Assert.isTrue(veiculoByPlaca == null,
                 "Já existe um veículo cadastrado com a placa " + veiculo.getPlaca() +
                         ". Verifique se os dados estão corretos e tente novamente.");
 
@@ -86,6 +90,8 @@ public class VeiculoService {
     public void validarUpdateVeiculo(Veiculo veiculo) {
 
 
+        veiculo.setAtualizacao(LocalDateTime.now());
+
         // Verificar se o ID do veiculo não é nulo
         Assert.notNull(veiculo.getId(),
                 "O ID do veiculo fornecido é nulo. " +
@@ -105,6 +111,19 @@ public class VeiculoService {
 
         // Verificar se o ID do modelo do veículo foi informado
         Assert.notNull(veiculo.getModelo().getId(), "O ID do modelo em veiculo não pode ser nulo.");
+
+        final Veiculo veiculoByPlaca = this.veiculoRepository.findByPlaca(veiculo.getPlaca());
+        Optional<Veiculo> veiculoAtualOptional = veiculoRepository.findById(veiculo.getId());
+        if (veiculoAtualOptional.isPresent()) {
+            Veiculo veiculoAtual = veiculoAtualOptional.get();
+            if (!veiculoAtual.getPlaca().equals(veiculo.getPlaca())) {
+                Optional<Veiculo> veiculoByPlacaa = Optional.ofNullable(veiculoRepository.findByPlaca(veiculo.getPlaca()));
+                Assert.isTrue(!veiculoByPlacaa.isPresent(), "Já existe um veículo cadastrado com a placa "
+                        + veiculo.getPlaca() +
+                        ". Verifique se os dados estão corretos e tente novamente.");
+            }
+        }
+
 
         // Verificar se o modelo com o ID informado existe no banco de dados
         Assert.isTrue(this.modeloRepository.existsById(veiculo.getModelo().getId()),

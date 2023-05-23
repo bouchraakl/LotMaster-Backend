@@ -4,22 +4,20 @@ package br.com.uniamerica.estacionamento.service;
 //------------------Imports----------------------
 
 import br.com.uniamerica.estacionamento.entity.*;
-import br.com.uniamerica.estacionamento.repository.CondutorRepository;
-import br.com.uniamerica.estacionamento.repository.ConfiguracaoRepository;
-import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
-import br.com.uniamerica.estacionamento.repository.VeiculoRepository;
+import br.com.uniamerica.estacionamento.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
+import java.util.*;
 
 
 /*
@@ -38,6 +36,10 @@ public class MovimentacaoService {
     private CondutorRepository condutorRepository;
     @Autowired
     private ConfiguracaoRepository configuracaoRepository;
+    @Autowired
+    private MarcaRepository marcaRepository;
+    @Autowired
+    private ModeloRepository modeloRepository;
 
 
     private Configuracao obterConfiguracao() {
@@ -56,6 +58,7 @@ public class MovimentacaoService {
     @Transactional
     public void validarCadastroMovimentacao(Movimentacao movimentacao) {
 
+        movimentacao.setCadastro(LocalDateTime.now());
         Configuracao configuracao = obterConfiguracao();
 
         BigDecimal valorMinutoMulta = configuracao.getValorMinutoMulta();
@@ -70,6 +73,7 @@ public class MovimentacaoService {
             Assert.isTrue(movimentacao.getEntrada().isBefore(movimentacao.getSaida()),
                     "O tempo de entrada deve ser posterior ao tempo de saída.");
             saidaOperations(movimentacao);
+            emitirRelatorio(movimentacao);
         } else {
             configurarValoresPadrao(movimentacao);
         }
@@ -85,6 +89,7 @@ public class MovimentacaoService {
     @Transactional
     public void validarUpdateMovimentacao(Movimentacao movimentacao) {
 
+        movimentacao.setAtualizacao(LocalDateTime.now());
         Assert.notNull(movimentacao.getId(), "O ID da movimentação fornecida é nulo.");
 
         Assert.isTrue(movimentacaoRepository.existsById(movimentacao.getId()),
@@ -96,11 +101,10 @@ public class MovimentacaoService {
 
 
         if (movimentacao.getSaida() != null) {
-
             Assert.isTrue(movimentacao.getEntrada().isBefore(movimentacao.getSaida()),
                     "O tempo de entrada deve ser posterior ao tempo de saída.");
-
             saidaOperations(movimentacao);
+            emitirRelatorio(movimentacao);
 
         } else {
             configurarValoresPadrao(movimentacao);
@@ -349,6 +353,57 @@ public class MovimentacaoService {
         movimentacao.setValorDesconto(BigDecimal.ZERO);
         movimentacao.setValorMulta(BigDecimal.ZERO);
 
+    }
+
+
+    private void emitirRelatorio(Movimentacao movimentacao) {
+        String nomeCondutor = condutorRepository.findByNome(movimentacao.getCondutor().getId());
+        String phoneCondutor = condutorRepository.findByPhone(movimentacao.getCondutor().getId());
+        String placaVeiculo = veiculoRepository.findByPlacaID(movimentacao.getVeiculo().getId());
+        Tipo tipo = veiculoRepository.getTipoVeiculo(movimentacao.getVeiculo().getId());
+        String ano = veiculoRepository.findByAnoID(movimentacao.getVeiculo().getId());
+
+        StringBuilder reportBuilder = new StringBuilder();
+        String lineSeparator = "╟─────────────────────────────────────────────────────╢";
+        String headerSeparator = "╠═════════════════════════════════════════════════════╣";
+
+        reportBuilder.append("╔═════════════════════════════════════════════════════╗\n");
+        reportBuilder.append("║            Fechamento da Movimentação               ║\n");
+        reportBuilder.append(headerSeparator).append("\n");
+        reportBuilder.append("║           Informações sobre o Condutor              ║\n");
+        reportBuilder.append(lineSeparator).append("\n");
+        reportBuilder.append("║ Nome do Condutor:             ").append(nomeCondutor).append("\n");
+        reportBuilder.append("║ Telefone do Condutor:         ").append(phoneCondutor).append("\n");
+        reportBuilder.append("║ Quantidade de Horas Desconto: ").append(movimentacao.getTempoDesconto())
+                .append(" horas\n");
+        reportBuilder.append(headerSeparator).append("\n");
+        reportBuilder.append("║            Informações sobre o Veículo              ║\n");
+        reportBuilder.append(lineSeparator).append("\n");
+        reportBuilder.append("║ Placa do Veiculo:               ").append(placaVeiculo).append("\n");
+        reportBuilder.append("║ Tipo  do Veiculo:               ").append(tipo).append("\n");
+        reportBuilder.append("║ Ano de Fabricação:              ").append(ano).append("\n");
+        reportBuilder.append(headerSeparator).append("\n");
+        reportBuilder.append("║        Informações sobre a Movimentação Atual       ║\n");
+        reportBuilder.append(lineSeparator).append("\n");
+        reportBuilder.append("║ Data de Entrada:           ").append(movimentacao.getEntrada()).append("\n");
+        reportBuilder.append("║ Data de Saída:             ").append(movimentacao.getSaida()).append("\n");
+        reportBuilder.append("║ Tempo Estacionado:         ").append(movimentacao.getTempoHoras())
+                .append(" horas e ")
+                .append(movimentacao.getTempoMinutos()).append(" minutos\n");
+        reportBuilder.append("║ Tempo Multa:               ").append(movimentacao.getTempoMultaHoras())
+                .append(" horas e ")
+                .append(movimentacao.getTempoMultaMinutes()).append(" minutos\n");
+        reportBuilder.append("║ Tempo de Desconto:         ").append(movimentacao.getTempoDesconto())
+                .append(" horas\n");
+        reportBuilder.append(headerSeparator).append("\n");
+        reportBuilder.append("║          Valores da Movimentação Atual              ║\n");
+        reportBuilder.append(lineSeparator).append("\n");
+        reportBuilder.append("║ Valor da Multa:            ").append(movimentacao.getValorMulta()).append("\n");
+        reportBuilder.append("║ Valor de Desconto:         ").append(movimentacao.getValorDesconto()).append("\n");
+        reportBuilder.append("║ Valor Total:               ").append(movimentacao.getValorTotal()).append("\n");
+        reportBuilder.append("╚═════════════════════════════════════════════════════╝\n");
+
+        System.out.println(reportBuilder.toString());
     }
 
 

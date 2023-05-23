@@ -49,7 +49,7 @@ public class MovimentacaoController {
             this.movimentacaoService.validarCadastroMovimentacao(movimentacao);
             return ResponseEntity.ok("Registro Cadastrado com Sucesso");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(e);
         }
     }
 

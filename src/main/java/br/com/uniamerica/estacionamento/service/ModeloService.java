@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /*
@@ -35,6 +36,8 @@ public class ModeloService {
      */
     @Transactional
     public void validarCadastroModelo(Modelo modelo) {
+
+        modelo.setCadastro(LocalDateTime.now());
 
         // Verificar se o nome do modelo já existe no banco de dados
         final List<Modelo> modelosByNome = this.modeloRepository.findByNome(modelo.getNome());
@@ -63,6 +66,8 @@ public class ModeloService {
      */
     @Transactional
     public void validarUpdateModelo(Modelo modelo) {
+
+        modelo.setAtualizacao(LocalDateTime.now());
 
         // Verificar se o modelo existe no banco de dados
         Assert.notNull(modelo.getId(),

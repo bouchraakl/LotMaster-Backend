@@ -12,8 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.List;
+import java.util.Optional;
 
 /*
 - Essa classe é responsável por realizar validações de dados relacionados a veiculos.
@@ -40,9 +42,11 @@ public class VeiculoService {
     @Transactional
     public void validarCadastroVeiculo(Veiculo veiculo) {
 
+        veiculo.setCadastro(LocalDateTime.now());
+
         // Verifica se a placa já existe no banco de dados
-        final List<Veiculo> veiculoByPlaca = this.veiculoRepository.findByPlaca(veiculo.getPlaca());
-        Assert.isTrue(veiculoByPlaca.isEmpty(),
+        final Veiculo veiculoByPlaca = this.veiculoRepository.findByPlaca(veiculo.getPlaca());
+        Assert.isTrue(veiculoByPlaca == null,
                 "Já existe um veículo cadastrado com a placa " + veiculo.getPlaca() +
                         ". Verifique se os dados estão corretos e tente novamente.");
 
@@ -53,15 +57,16 @@ public class VeiculoService {
                 "A placa do veículo deve seguir o formato AAA9999" +
                         ". Verifique a placa informada e tente novamente.");
 
+        // Verificar se o modelo com o ID informado existe no banco de dados
+        Assert.isTrue(this.modeloRepository.existsById(veiculo.getModelo().getId()),
+                "Modelo não existe no banco de dados");
+
         final List<Modelo> isActive = modeloRepository.findActiveElement(veiculo.getModelo().getId());
         Assert.isTrue(!isActive.isEmpty(), "A modelo associado a esse veiculo está inativo.");
 
         // Verifica se o ID do modelo foi informado
         Assert.notNull(veiculo.getModelo().getId(), "O ID do modelo em veiculo não pode ser nulo.");
 
-        // Verificar se o modelo com o ID informado existe no banco de dados
-        Assert.isTrue(this.modeloRepository.existsById(veiculo.getModelo().getId()),
-                "Modelo não existe no banco de dados");
 
         // Define o range permitido para o ano do veículo
         Range<Integer> rangeAno = Range.closed(MIN_ALLOWED_YEAR, currentYear);
@@ -86,6 +91,8 @@ public class VeiculoService {
     public void validarUpdateVeiculo(Veiculo veiculo) {
 
 
+        veiculo.setAtualizacao(LocalDateTime.now());
+
         // Verificar se o ID do veiculo não é nulo
         Assert.notNull(veiculo.getId(),
                 "O ID do veiculo fornecido é nulo. " +
@@ -105,6 +112,19 @@ public class VeiculoService {
 
         // Verificar se o ID do modelo do veículo foi informado
         Assert.notNull(veiculo.getModelo().getId(), "O ID do modelo em veiculo não pode ser nulo.");
+
+        final Veiculo veiculoByPlaca = this.veiculoRepository.findByPlaca(veiculo.getPlaca());
+        Optional<Veiculo> veiculoAtualOptional = veiculoRepository.findById(veiculo.getId());
+        if (veiculoAtualOptional.isPresent()) {
+            Veiculo veiculoAtual = veiculoAtualOptional.get();
+            if (!veiculoAtual.getPlaca().equals(veiculo.getPlaca())) {
+                Optional<Veiculo> veiculoByPlacaa = Optional.ofNullable(veiculoRepository.findByPlaca(veiculo.getPlaca()));
+                Assert.isTrue(!veiculoByPlacaa.isPresent(), "Já existe um veículo cadastrado com a placa "
+                        + veiculo.getPlaca() +
+                        ". Verifique se os dados estão corretos e tente novamente.");
+            }
+        }
+
 
         // Verificar se o modelo com o ID informado existe no banco de dados
         Assert.isTrue(this.modeloRepository.existsById(veiculo.getModelo().getId()),

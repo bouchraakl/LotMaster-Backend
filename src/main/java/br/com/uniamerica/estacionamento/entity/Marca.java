@@ -3,11 +3,10 @@ package br.com.uniamerica.estacionamento.entity;
 
 /* -------------------Imports--------------------------- */
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -26,7 +25,14 @@ public class Marca extends AbstractEntity {
     @Column(name = "nome", nullable = false,length = 30)
     @NotNull(message = "O nome da marca não pode ser nula.")
     @NotBlank(message = "O nome do marca não pode ser vazia.")
-    @Size(min = 2,max = 30,message = "O nome do condutor deve ter no máximo 30 caracteres.")
+    @Size(min = 2,max = 30,message = "O nome do condutor deve ter no minimo 2 caracteres e no máximo 30 caracteres.")
+    @Pattern(regexp = "^[a-zA-Z0-9]*$", message = "Caracteres especiais não são permitidos no campo 'nome'")
     private String nome;
+
+    @PrePersist
+    @PreUpdate
+    public void prePersistAndUpdate() {
+        this.nome = this.nome.toLowerCase();
+    }
 
 }

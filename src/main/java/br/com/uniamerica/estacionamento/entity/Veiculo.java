@@ -5,6 +5,7 @@ package br.com.uniamerica.estacionamento.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.envers.AuditTable;
@@ -21,6 +22,7 @@ public class Veiculo extends AbstractEntity {
     @Column(name = "placa", nullable = false, unique = true)
     @NotNull(message = "A placa do veiculo não pode ser nula.")
     @NotBlank(message = "A placa do veiculo não pode ser vazia.")
+    @Pattern(regexp = "^[a-zA-Z0-9]*$", message = "Caracteres especiais não são permitidos no campo 'placa'")
     private String placa;
 
     @Getter @Setter
@@ -44,5 +46,7 @@ public class Veiculo extends AbstractEntity {
     @Column(name = "tipo", nullable = false)
     @NotNull(message = "O tipo do veículo não pode ser nulo.")
     private Tipo tipo;
+
+
     
 }

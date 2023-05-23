@@ -7,11 +7,15 @@ import br.com.uniamerica.estacionamento.entity.Condutor;
 import br.com.uniamerica.estacionamento.repository.CondutorRepository;
 import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /*
 - Essa classe é responsável por realizar validações de dados relacionados a condutores.
@@ -34,9 +38,12 @@ public class CondutorService {
     @Transactional
     public void validarCadastroCondutor(Condutor condutor) {
 
+        condutor.setCadastro(LocalDateTime.now());
+
+
         // Verifica se não há nenhum outro condutor com o mesmo CPF cadastrado
-        final List<Condutor> condutorbyCPF = this.condutorRepository.findbyCPF(condutor.getCpf());
-        Assert.isTrue(condutorbyCPF.isEmpty(),
+        final Condutor condutorbyCPF = this.condutorRepository.findbyCPF(condutor.getCpf());
+        Assert.isTrue(condutorbyCPF == null,
                 "Um condutor já está registrado com o CPF informado. " +
                         "Por favor, verifique os dados informados e tente novamente.");
 
@@ -60,6 +67,7 @@ public class CondutorService {
     @Transactional
     public void validarUpdateCondutor(Condutor condutor) {
 
+        condutor.setAtualizacao(LocalDateTime.now());
         // Verificar se o condutor existe no banco de dados
         Assert.notNull(condutor.getId(),
                 "O ID do condutor fornecido é nulo. " +
@@ -72,11 +80,15 @@ public class CondutorService {
 
 
         // Verifica se não há nenhum outro condutor com o mesmo CPF cadastrado
-        final List<Condutor> condutorbyCPF = this.condutorRepository.findbyCPF(condutor.getCpf());
-        Assert.isTrue(condutorbyCPF.isEmpty(),
-                "Um condutor já está registrado com o CPF informado. " +
+        Optional<Condutor> condutorAtualOptional = condutorRepository.findById(condutor.getId());
+        if (condutorAtualOptional.isPresent()) {
+            Condutor condutorAtual = condutorAtualOptional.get();
+            if (!condutorAtual.getCpf().equals(condutor.getCpf())) {
+                Optional<Condutor> condutorByCPF = Optional.ofNullable(condutorRepository.findbyCPF(condutor.getCpf()));
+                Assert.isTrue(!condutorByCPF.isPresent(), "Um condutor já está registrado com o CPF informado. " +
                         "Por favor, verifique os dados informados e tente novamente.");
-
+            }
+        }
 
         // Verifica se o telefone do condutor está no formato correto
         final String telefoneFormat = "\\+55\\(\\d{2}\\)\\d{9}";

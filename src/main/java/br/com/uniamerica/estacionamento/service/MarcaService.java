@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /*
@@ -32,6 +33,8 @@ public class MarcaService {
     @Transactional
     public void validarCadastroMarca(Marca marca) {
 
+        marca.setCadastro(LocalDateTime.now());
+
         // Verificar se a marca já existe no banco de dados
         List<Marca> marcasByNome = marcaRepository.findByNome(marca.getNome());
         Assert.isTrue(marcasByNome.isEmpty(),
@@ -50,6 +53,8 @@ public class MarcaService {
      */
     @Transactional
     public void validarUpdateMarca(Marca marca) {
+
+        marca.setAtualizacao(LocalDateTime.now());
 
         // Verificar se o marca existe no banco de dados
         Assert.notNull(marca.getId(),

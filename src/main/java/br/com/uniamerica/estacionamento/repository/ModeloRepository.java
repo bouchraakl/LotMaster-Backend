@@ -24,6 +24,9 @@ public interface ModeloRepository extends JpaRepository<Modelo, Long> {
     @Query(value = "SELECT * FROM modelos WHERE marca_id = :id", nativeQuery = true)
     public List<Modelo> findByMarcaId(@Param("id") Long id);
 
+    @Query("SELECT m.nome FROM Modelo m WHERE m.id = :id")
+    public String findByNomeID(@Param("id") final Long id);
+
     @Query("from Modelo where id = :id and ativo = true")
     public List<Modelo> findActiveElement(@Param("id") Long id);
 }

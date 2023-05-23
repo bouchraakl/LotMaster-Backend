@@ -57,15 +57,16 @@ public class VeiculoService {
                 "A placa do veículo deve seguir o formato AAA9999" +
                         ". Verifique a placa informada e tente novamente.");
 
+        // Verificar se o modelo com o ID informado existe no banco de dados
+        Assert.isTrue(this.modeloRepository.existsById(veiculo.getModelo().getId()),
+                "Modelo não existe no banco de dados");
+
         final List<Modelo> isActive = modeloRepository.findActiveElement(veiculo.getModelo().getId());
         Assert.isTrue(!isActive.isEmpty(), "A modelo associado a esse veiculo está inativo.");
 
         // Verifica se o ID do modelo foi informado
         Assert.notNull(veiculo.getModelo().getId(), "O ID do modelo em veiculo não pode ser nulo.");
 
-        // Verificar se o modelo com o ID informado existe no banco de dados
-        Assert.isTrue(this.modeloRepository.existsById(veiculo.getModelo().getId()),
-                "Modelo não existe no banco de dados");
 
         // Define o range permitido para o ano do veículo
         Range<Integer> rangeAno = Range.closed(MIN_ALLOWED_YEAR, currentYear);

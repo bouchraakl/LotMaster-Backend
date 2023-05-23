@@ -15,6 +15,9 @@ import java.util.List;
 public interface MarcaRepository extends JpaRepository<Marca, Long> {
     public List<Marca> findByNome(final String nome);
 
+    @Query("SELECT ma.nome FROM Marca ma WHERE ma.id = :id")
+    public String findByNomeID(@Param("id") final Long id);
+
     @Query("from Marca where ativo = true")
     public List<Marca> findAllAtivo();
 

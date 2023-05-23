@@ -4,10 +4,7 @@ package br.com.uniamerica.estacionamento.service;
 //------------------Imports----------------------
 
 import br.com.uniamerica.estacionamento.entity.*;
-import br.com.uniamerica.estacionamento.repository.CondutorRepository;
-import br.com.uniamerica.estacionamento.repository.ConfiguracaoRepository;
-import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
-import br.com.uniamerica.estacionamento.repository.VeiculoRepository;
+import br.com.uniamerica.estacionamento.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,6 +36,10 @@ public class MovimentacaoService {
     private CondutorRepository condutorRepository;
     @Autowired
     private ConfiguracaoRepository configuracaoRepository;
+    @Autowired
+    private MarcaRepository marcaRepository;
+    @Autowired
+    private ModeloRepository modeloRepository;
 
 
     private Configuracao obterConfiguracao() {
@@ -354,34 +355,56 @@ public class MovimentacaoService {
 
     }
 
+
     private void emitirRelatorio(Movimentacao movimentacao) {
+        String nomeCondutor = condutorRepository.findByNome(movimentacao.getCondutor().getId());
+        String phoneCondutor = condutorRepository.findByPhone(movimentacao.getCondutor().getId());
+        String placaVeiculo = veiculoRepository.findByPlacaID(movimentacao.getVeiculo().getId());
+        Tipo tipo = veiculoRepository.getTipoVeiculo(movimentacao.getVeiculo().getId());
+        String ano = veiculoRepository.findByAnoID(movimentacao.getVeiculo().getId());
 
-        System.out.println(
-                "---------------------------Fechamento da Movimentação---------------------------" +
-                        "\n------------Informaçoes Sobre o Condutor------------" +
-                        "\n Nome do Condutor : " + movimentacao.getCondutor().getNome() +
-                        "\n Telefone do Condutor :" + movimentacao.getCondutor().getTelefone() +
-                        "\n Quantidade de Horas Desconto :" + movimentacao.getCondutor().getTempoDescontoHoras() +
-                        " horas" +
-                        "\n---------------------------------------------------------------------------------" +
-                        "\n------------Informaçoes Sobre o Veiculo------------" +
-                        "\n Placa do Carro : " + movimentacao.getVeiculo().getPlaca() +
-                        "\n Ano de Fabricação : " + movimentacao.getVeiculo().getAno() +
-                        "\n------------Informaçoes Sobre Movimentação Atual------------" +
-                        "\n Data de Entrada : " + movimentacao.getEntrada() +
-                        "\n Data de Saida : " + movimentacao.getSaida() +
-                        "\n Tempo Estacionado: " + LocalTime.of(movimentacao.getTempoHoras(),
-                        movimentacao.getTempoMinutos(), 0) +
-                        "\n Tempo Multa: " + LocalTime.of(movimentacao.getTempoMultaHoras(),
-                        movimentacao.getTempoMultaMinutes(), 0) +
-                        "\n Tempo de Desconto : " + LocalTime.of(movimentacao.getTempoDesconto(), 0, 0) +
-                        "\n------------Valores da Movimentação Atual------------" +
-                        "\n Valor da Multa : " + movimentacao.getValorMulta() +
-                        "\n Valor de Desconto : " + movimentacao.getValorDesconto() +
-                        "\n Valor Total : " + movimentacao.getValorTotal() +
-                        "\n---------------------------------------------------------------------------------"
-        );
+        StringBuilder reportBuilder = new StringBuilder();
+        String lineSeparator = "╟─────────────────────────────────────────────────────╢";
+        String headerSeparator = "╠═════════════════════════════════════════════════════╣";
 
+        reportBuilder.append("╔═════════════════════════════════════════════════════╗\n");
+        reportBuilder.append("║            Fechamento da Movimentação               ║\n");
+        reportBuilder.append(headerSeparator).append("\n");
+        reportBuilder.append("║           Informações sobre o Condutor              ║\n");
+        reportBuilder.append(lineSeparator).append("\n");
+        reportBuilder.append("║ Nome do Condutor:             ").append(nomeCondutor).append("\n");
+        reportBuilder.append("║ Telefone do Condutor:         ").append(phoneCondutor).append("\n");
+        reportBuilder.append("║ Quantidade de Horas Desconto: ").append(movimentacao.getTempoDesconto())
+                .append(" horas\n");
+        reportBuilder.append(headerSeparator).append("\n");
+        reportBuilder.append("║            Informações sobre o Veículo              ║\n");
+        reportBuilder.append(lineSeparator).append("\n");
+        reportBuilder.append("║ Placa do Veiculo:               ").append(placaVeiculo).append("\n");
+        reportBuilder.append("║ Tipo  do Veiculo:               ").append(tipo).append("\n");
+        reportBuilder.append("║ Ano de Fabricação:              ").append(ano).append("\n");
+        reportBuilder.append(headerSeparator).append("\n");
+        reportBuilder.append("║        Informações sobre a Movimentação Atual       ║\n");
+        reportBuilder.append(lineSeparator).append("\n");
+        reportBuilder.append("║ Data de Entrada:           ").append(movimentacao.getEntrada()).append("\n");
+        reportBuilder.append("║ Data de Saída:             ").append(movimentacao.getSaida()).append("\n");
+        reportBuilder.append("║ Tempo Estacionado:         ").append(movimentacao.getTempoHoras())
+                .append(" horas e ")
+                .append(movimentacao.getTempoMinutos()).append(" minutos\n");
+        reportBuilder.append("║ Tempo Multa:               ").append(movimentacao.getTempoMultaHoras())
+                .append(" horas e ")
+                .append(movimentacao.getTempoMultaMinutes()).append(" minutos\n");
+        reportBuilder.append("║ Tempo de Desconto:         ").append(movimentacao.getTempoDesconto())
+                .append(" horas\n");
+        reportBuilder.append(headerSeparator).append("\n");
+        reportBuilder.append("║          Valores da Movimentação Atual              ║\n");
+        reportBuilder.append(lineSeparator).append("\n");
+        reportBuilder.append("║ Valor da Multa:            ").append(movimentacao.getValorMulta()).append("\n");
+        reportBuilder.append("║ Valor de Desconto:         ").append(movimentacao.getValorDesconto()).append("\n");
+        reportBuilder.append("║ Valor Total:               ").append(movimentacao.getValorTotal()).append("\n");
+        reportBuilder.append("╚═════════════════════════════════════════════════════╝\n");
+
+        System.out.println(reportBuilder.toString());
     }
+
 
 }

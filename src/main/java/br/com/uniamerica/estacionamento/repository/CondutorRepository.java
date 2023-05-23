@@ -12,7 +12,9 @@ import java.util.List;
 
 /* ----------------------------------------------------- */
 public interface CondutorRepository extends JpaRepository<Condutor, Long> {
-    public List<Condutor> findByNome(final String nome);
+
+    @Query("SELECT c.nome FROM Condutor c WHERE c.id = :id")
+    public String findByNome(@Param("id") Long id);
 
     @Query("from Condutor where cpf = :cpf")
     public Condutor findbyCPF(@Param("cpf") final String cpf);
@@ -23,5 +25,7 @@ public interface CondutorRepository extends JpaRepository<Condutor, Long> {
     @Query("from Condutor where id = :id and ativo = true")
     public List<Condutor> findActiveElement(@Param("id") Long id);
 
+    @Query("SELECT c.telefone FROM Condutor c WHERE c.id = :id")
+    public String findByPhone(@Param("id") Long id);
 
 }

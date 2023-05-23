@@ -7,6 +7,8 @@ import br.com.uniamerica.estacionamento.entity.Condutor;
 import br.com.uniamerica.estacionamento.repository.CondutorRepository;
 import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -37,6 +39,8 @@ public class CondutorService {
     public void validarCadastroCondutor(Condutor condutor) {
 
         condutor.setCadastro(LocalDateTime.now());
+
+
         // Verifica se não há nenhum outro condutor com o mesmo CPF cadastrado
         final Condutor condutorbyCPF = this.condutorRepository.findbyCPF(condutor.getCpf());
         Assert.isTrue(condutorbyCPF == null,

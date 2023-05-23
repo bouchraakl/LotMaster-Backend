@@ -18,8 +18,8 @@ public abstract class AbstractEntity {
     @Column(name = "id", unique = true)
     private Long id;
 
-    @Getter
-    @Setter
+
+    @Getter @Setter
     @Column(name = "dtCadastro")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime cadastro;

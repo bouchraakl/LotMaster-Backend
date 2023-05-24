@@ -32,7 +32,8 @@ public class MarcaService {
      */
     @Transactional
     public void validarCadastroMarca(Marca marca) {
-        setTimestamps(marca);
+
+        marca.setCadastro(LocalDateTime.now());
 
         List<Marca> marcaExistente = marcaRepository.findByNome(marca.getNome());
         Assert.isTrue(marcaExistente.isEmpty(),
@@ -50,7 +51,8 @@ public class MarcaService {
      */
     @Transactional
     public void validarUpdateMarca(Marca marca) {
-        setTimestamps(marca);
+
+        marca.setAtualizacao(LocalDateTime.now());
 
         Assert.notNull(marca.getId(),
                 "O ID da marca fornecido é nulo. " +
@@ -91,9 +93,4 @@ public class MarcaService {
 
     }
 
-    private void setTimestamps(Marca marca) {
-        LocalDateTime now = LocalDateTime.now();
-        marca.setCadastro(now);
-        marca.setAtualizacao(now);
-    }
 }

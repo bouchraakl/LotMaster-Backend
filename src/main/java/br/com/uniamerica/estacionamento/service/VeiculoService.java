@@ -88,9 +88,8 @@ public class VeiculoService {
      *
      * @param veiculo o objeto Veiculo a ser validado
      */
-    @Transactional(readOnly = true, rollbackFor = Exception.class)
+    @Transactional
     public void validarUpdateVeiculo(Veiculo veiculo) {
-
 
         veiculo.setAtualizacao(LocalDateTime.now());
 

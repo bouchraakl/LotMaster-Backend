@@ -254,11 +254,11 @@ public class MovimentacaoService {
 
         int tempoMultaMinutos = 0;
 
-        int ano = saida.getYear() - entrada.getYear();
+        int anos = saida.getYear() - entrada.getYear();
         int dias = saida.getDayOfYear() - entrada.getDayOfYear();
 
-        if (ano > 0) {
-            dias += 365 * ano;
+        if (anos > 0) {
+            dias += anos * 365;
         }
 
         // Verificar se a entrada ocorreu antes do horário de início do expediente
@@ -273,7 +273,7 @@ public class MovimentacaoService {
 
         if (dias > 0) {
             int duracaoExpediente = (int) Duration.between(inicioExpediente, fimExpediente).toMinutes();
-            tempoMultaMinutos += dias * duracaoExpediente - duracaoExpediente;
+            tempoMultaMinutos += dias * duracaoExpediente;
         }
 
         // Calcular horas e minutos da multa
@@ -293,7 +293,9 @@ public class MovimentacaoService {
         movimentacao.setValorMulta(valorMultaTotal);
     }
 
+
     private void manageDesconto(Movimentacao movimentacao) {
+
         Condutor condutor = condutorRepository.findById(movimentacao.getCondutor().getId()).orElse(null);
 
         if (condutor == null) {

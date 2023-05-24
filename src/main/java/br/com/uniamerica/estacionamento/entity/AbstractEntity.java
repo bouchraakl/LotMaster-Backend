@@ -18,7 +18,6 @@ public abstract class AbstractEntity {
     @Column(name = "id", unique = true)
     private Long id;
 
-
     @Getter @Setter
     @Column(name = "dtCadastro")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
@@ -34,7 +33,6 @@ public abstract class AbstractEntity {
     @Setter
     @Column(name = "ativo", nullable = false)
     @NotNull(message = "Campo ativo não informado.")
-    @AssertTrue(message = "O campo 'ativo' deve ser 'true' ou 'false'")
     private boolean ativo;
 
     @PrePersist

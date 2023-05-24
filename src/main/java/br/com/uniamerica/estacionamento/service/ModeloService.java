@@ -88,7 +88,7 @@ public class ModeloService {
         Assert.notNull(modeloId,
                 "ID do modelo nao pode ser nulo.");
         Assert.isTrue(modeloRepository.existsById(modeloId),
-                "Não foi possível apagar o modelo, pois oID  não foi encontrado.");
+                "Não foi possível apagar o modelo, pois o ID  não foi encontrado.");
     }
 
     /**

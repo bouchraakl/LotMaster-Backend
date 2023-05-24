@@ -27,6 +27,7 @@ public abstract class AbstractEntity {
     @Getter
     @Setter
     @Column(name = "dtAtualizacao")
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime atualizacao;
 
     @Getter

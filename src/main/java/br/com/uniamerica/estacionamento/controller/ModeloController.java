@@ -100,7 +100,7 @@ public class ModeloController {
      * @return ResponseEntity indicating the success or failure of the operation.
      */
     @DeleteMapping
-    public ResponseEntity<?> excluirCondutor(@RequestParam("id") final Long id) {
+    public ResponseEntity<?> excluirModelo(@RequestParam("id") final Long id) {
         try {
             modeloService.validarDeleteModelo(id);
             return ResponseEntity.ok("Registro apagado com sucesso");

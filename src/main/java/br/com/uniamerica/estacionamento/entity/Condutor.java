@@ -61,10 +61,4 @@ public class Condutor extends AbstractEntity {
     @Column(name = "tempo_descontoHoras")
     private int tempoDescontoHoras;
 
-    @PrePersist
-    @PreUpdate
-    public void prePersistAndUpdate() {
-        this.nome = this.nome.toLowerCase();
-    }
-
 }

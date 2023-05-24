@@ -82,9 +82,19 @@ public class CondutorService {
      * @throws IllegalArgumentException If the provided Condutor ID is not found in the database.
      */
     @Transactional
-    public void validarDeleteCondutor(Long id) {
-        Assert.isTrue(condutorRepository.existsById(id),
-                "O ID do condutor especificado não foi encontrado na base de dados. " +
-                        "Por favor, verifique se o ID está correto e tente novamente.");
+    public void validarDeleteCondutor(Long id){
+
+        /*
+         * Verifica se o Condutor informado existe
+         * */
+        final Condutor condutorBanco = this.condutorRepository.findById(id).orElse(null);
+        Assert.notNull(condutorBanco, "Condutor não encontrado!");
+
+        if(!this.movimentacaoRepository.findByVeiculoId(id).isEmpty()){
+            condutorBanco.setAtivo(false);
+            this.condutorRepository.save(condutorBanco);
+        }else{
+            this.condutorRepository.delete(condutorBanco);
+        }
     }
 }

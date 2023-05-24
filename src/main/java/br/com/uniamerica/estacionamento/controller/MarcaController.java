@@ -97,7 +97,7 @@ public class MarcaController {
      * @return ResponseEntity indicating the success or failure of the operation.
      */
     @DeleteMapping
-    public ResponseEntity<?> excluirCondutor(@RequestParam("id") final Long id) {
+    public ResponseEntity<?> excluirMarca(@RequestParam("id") final Long id) {
         try {
             marcaService.validarDeleteMarca(id);
             return ResponseEntity.ok("Registro apagado com sucesso");

@@ -2,6 +2,7 @@ package br.com.uniamerica.estacionamento.service;
 
 import br.com.uniamerica.estacionamento.entity.Marca;
 import br.com.uniamerica.estacionamento.repository.MarcaRepository;
+import br.com.uniamerica.estacionamento.repository.ModeloRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,12 +18,11 @@ import java.util.Optional;
 @Service
 public class MarcaService {
 
-    private final MarcaRepository marcaRepository;
-
     @Autowired
-    public MarcaService(MarcaRepository marcaRepository) {
-        this.marcaRepository = marcaRepository;
-    }
+    public MarcaRepository marcaRepository;
+    @Autowired
+    public ModeloRepository modeloRepository;
+
 
     /**
      * Validates the registration of a new brand.
@@ -70,10 +70,25 @@ public class MarcaService {
      * @throws IllegalArgumentException if the ID does not exist in the database.
      */
     @Transactional
-    public void validarDeleteMarca(Long id) {
-        Assert.isTrue(marcaRepository.existsById(id),
-                "O ID da marca especificada não foi encontrada na base de dados. " +
-                        "Verifique se o ID está correto e tente novamente.");
+    public void validarDeleteMarca(Long id){
+        /*
+         * Verifica se a Marca informado existe
+         * */
+        final Marca marcaBanco = this.marcaRepository.findById(id).orElse(null);
+        Assert.notNull(marcaBanco, "Marca não encontrada!");
+
+        /*
+         * Verifica se a Marca informado está relacionado a um Modelo,
+         * True: Desativa o cadastro
+         * False: Faz o DELETE do registro
+         * */
+        if(!this.modeloRepository.findByMarcaId(id).isEmpty()){
+            marcaBanco.setAtivo(false);
+            this.marcaRepository.save(marcaBanco);
+        }else{
+            this.marcaRepository.delete(marcaBanco);
+        }
+
     }
 
     private void setTimestamps(Marca marca) {

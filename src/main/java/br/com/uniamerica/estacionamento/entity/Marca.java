@@ -23,10 +23,5 @@ public class Marca extends AbstractEntity {
     @Pattern(regexp = "^[a-zA-Z0-9]*$", message = "Caracteres especiais não são permitidos no campo 'nome'")
     private String nome;
 
-    @PrePersist
-    @PreUpdate
-    public void prePersistAndUpdate() {
-        this.nome = this.nome.toLowerCase();
-    }
 
 }

@@ -54,7 +54,7 @@ public class Configuracao extends AbstractEntity {
     @Setter
     @Column(name = "tempo_dedesconto", nullable = false)
     @NotNull(message = "O tempo de desconto não pode ser nulo.")
-    private LocalTime tempoDeDesconto;
+    private int tempoDeDesconto;
 
     @Getter
     @Setter

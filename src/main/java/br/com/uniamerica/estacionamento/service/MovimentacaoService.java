@@ -89,6 +89,12 @@ public class MovimentacaoService {
     @Transactional
     public void validarUpdateMovimentacao(Movimentacao movimentacao) {
 
+        Configuracao configuracao = obterConfiguracao();
+
+        BigDecimal valorMinutoMulta = configuracao.getValorMinutoMulta();
+        movimentacao.setValorHoraMulta(valorMinutoMulta.multiply(new BigDecimal("60.0")));
+        movimentacao.setValorHora(configuracao.getValorHora());
+
         movimentacao.setAtualizacao(LocalDateTime.now());
         Assert.notNull(movimentacao.getId(), "O ID da movimentação fornecida é nulo.");
 
@@ -120,13 +126,14 @@ public class MovimentacaoService {
      * @throws IllegalArgumentException se o ID da movimentação não existir no banco de dados
      */
     @Transactional
-    public void validarDeleteMovimentacao(Long id) {
+    public void validarDeleteMovimentacao(Long id){
+        /*
+         * Verifica se a Movimentação informada existe
+         * */
+        final Movimentacao movimentacao = this.movimentacaoRepository.findById(id).orElse(null);
+        Assert.notNull(movimentacao, "Movimentação não encontrada!");
 
-        // Verificar se o ID do movimentacao existe no banco de dados
-        Assert.isTrue(movimentacaoRepository.existsById(id),
-                "O ID da movimentação especificada não foi encontrada na base de dados. " +
-                        "Por favor, verifique se o ID está correto e tente novamente.");
-
+       movimentacaoRepository.delete(movimentacao);
     }
 
     private void validarMovimentacao(Movimentacao movimentacao) {
@@ -287,46 +294,38 @@ public class MovimentacaoService {
     }
 
     private void manageDesconto(Movimentacao movimentacao) {
-
-        // Obter o condutor da movimentação
         Condutor condutor = condutorRepository.findById(movimentacao.getCondutor().getId()).orElse(null);
 
-        if (condutor != null) {
-
-            int tempoPagoHoras = condutor.getTempoPagoHoras();
-            int tempoHoras = movimentacao.getTempoHoras();
-
-            int currentMultiple = tempoPagoHoras / 50;
-            int nextMultiple = (tempoPagoHoras + tempoHoras) / 50;
-
-            // Verificar se o próximo múltiplo de 50 horas foi atingido
-            if (nextMultiple > currentMultiple) {
-
-                int numNewMultiples = nextMultiple - currentMultiple;
-                int descontoToAdd = numNewMultiples * 5;
-
-                // Adicionar o desconto ao condutor e à movimentação
-                int currentDesconto = condutor.getTempoDescontoHoras();
-                int newDescontoHours = currentDesconto + descontoToAdd;
-
-                condutor.setTempoDescontoHoras(newDescontoHours);
-
-            }
-            if (condutor.getTempoDescontoHoras() != 0) {
-                movimentacao.setTempoDesconto(condutor.getTempoDescontoHoras());
-            }
-
-            if (obterConfiguracao().getGerarDesconto()) {
-                int tempoDesconto = movimentacao.getTempoDesconto();
-                BigDecimal valorDesconto = BigDecimal.valueOf(tempoDesconto).multiply(movimentacao.getValorHora());
-                movimentacao.setValorDesconto(valorDesconto);
-
-            } else {
-                movimentacao.setValorDesconto(new BigDecimal("0.00"));
-            }
+        if (condutor == null) {
+            return;
         }
 
+        int tempoPagoHoras = condutor.getTempoPagoHoras();
+        int tempoHoras = movimentacao.getTempoHoras();
+        Configuracao configuracao = obterConfiguracao();
+
+        int currentMultiple = tempoPagoHoras / configuracao.getTempoParaDesconto();
+        int nextMultiple = (tempoPagoHoras + tempoHoras) / configuracao.getTempoParaDesconto();
+
+        if (nextMultiple > currentMultiple) {
+            int numNewMultiples = nextMultiple - currentMultiple;
+            int descontoToAdd = numNewMultiples * configuracao.getTempoDeDesconto();
+            int currentDesconto = condutor.getTempoDescontoHoras();
+            int newDescontoHours = currentDesconto + descontoToAdd;
+            condutor.setTempoDescontoHoras(newDescontoHours);
+        }
+
+        int tempoDesconto = condutor.getTempoDescontoHoras();
+        movimentacao.setTempoDesconto(tempoDesconto);
+
+        if (configuracao.getGerarDesconto()) {
+            BigDecimal valorDesconto = BigDecimal.valueOf(tempoDesconto).multiply(movimentacao.getValorHora());
+            movimentacao.setValorDesconto(valorDesconto);
+        } else {
+            movimentacao.setValorDesconto(BigDecimal.ZERO);
+        }
     }
+
 
     private void verificarVagasDisponiveis(Movimentacao movimentacao) {
         Tipo tipoVeiculo = veiculoRepository.getTipoVeiculo(movimentacao.getVeiculo().getId());
@@ -358,8 +357,7 @@ public class MovimentacaoService {
 
     }
 
-
-    private void emitirRelatorio(Movimentacao movimentacao) {
+    public String emitirRelatorio(Movimentacao movimentacao) {
         String nomeCondutor = condutorRepository.findByNome(movimentacao.getCondutor().getId());
         String phoneCondutor = condutorRepository.findByPhone(movimentacao.getCondutor().getId());
         String placaVeiculo = veiculoRepository.findByPlacaID(movimentacao.getVeiculo().getId());
@@ -407,6 +405,7 @@ public class MovimentacaoService {
         reportBuilder.append("╚═════════════════════════════════════════════════════╝\n");
 
         System.out.println(reportBuilder.toString());
+        return reportBuilder.toString();
     }
 
 

@@ -30,9 +30,4 @@ public class Modelo extends AbstractEntity {
     @NotNull(message = "O objeto marca não foi informado.")
     private Marca marca;
 
-    @PrePersist
-    @PreUpdate
-    public void prePersistAndUpdate() {
-        this.nome = this.nome.toLowerCase();
-    }
 }

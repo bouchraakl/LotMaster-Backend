@@ -3,6 +3,7 @@ package br.com.uniamerica.estacionamento.service;
 
 import br.com.uniamerica.estacionamento.entity.*;
 import br.com.uniamerica.estacionamento.repository.ModeloRepository;
+import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
 import br.com.uniamerica.estacionamento.repository.VeiculoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Range;
@@ -30,6 +31,8 @@ public class VeiculoService {
     private VeiculoRepository veiculoRepository;
     @Autowired
     private ModeloRepository modeloRepository;
+    @Autowired
+    private MovimentacaoRepository movimentacaoRepository;
 
     /**
      * Realiza validações para cadastrar um novo veículo no sistema.
@@ -152,14 +155,26 @@ public class VeiculoService {
      * @param id o ID do Veiculo a ser excluído
      * @throws IllegalArgumentException se o ID do Veiculo não existir no banco de dados
      */
-    @Transactional(readOnly = true, rollbackFor = Exception.class)
-    public void validarDeleteVeiculo(Long id) {
+    @Transactional
+    public void validarDeleteVeiculo(Long id){
 
-        // Verificar se o ID do veiculo existe no banco de dados
-        Assert.isTrue(veiculoRepository.existsById(id),
-                "O ID do veiculo especificado não foi encontrado na base de dados. " +
-                        "Por favor, verifique se o ID está correto e tente novamente.");
+        /*
+         * Verifica se o Veiculo informado existe
+         * */
+        final Veiculo veiculoBanco = this.veiculoRepository.findById(id).orElse(null);
+        Assert.notNull(veiculoBanco, "Veiculo não encontrado!");
 
+        /*
+         * Verifica se o Veiculo informado está relacionado a uma Movimentação,
+         * True: Desativa o cadastro
+         * False: Faz o DELETE do registro
+         * */
+        if(!this.movimentacaoRepository.findByVeiculoId(id).isEmpty()){
+            veiculoBanco.setAtivo(false);
+            this.veiculoRepository.save(veiculoBanco);
+        }else{
+            this.veiculoRepository.delete(veiculoBanco);
+        }
     }
 
 

@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface MovimentacaoRepository extends JpaRepository<Movimentacao, Long> {
@@ -48,4 +49,7 @@ public interface MovimentacaoRepository extends JpaRepository<Movimentacao, Long
      */
     @Query("SELECT m FROM Movimentacao m JOIN m.veiculo v WHERE v.tipo = :tipo")
     List<Movimentacao> findByVeiculoTipo(@Param("tipo") Tipo tipo);
+
+    @Query("FROM Movimentacao WHERE id = :id")
+    public List<Movimentacao> findByVeiculoId(@Param("id") final Long id);
 }

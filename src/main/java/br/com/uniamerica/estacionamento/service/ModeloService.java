@@ -4,7 +4,9 @@ import br.com.uniamerica.estacionamento.entity.Marca;
 import br.com.uniamerica.estacionamento.entity.Modelo;
 import br.com.uniamerica.estacionamento.repository.MarcaRepository;
 import br.com.uniamerica.estacionamento.repository.ModeloRepository;
+import br.com.uniamerica.estacionamento.repository.VeiculoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -19,20 +21,12 @@ import java.util.List;
 @Service
 public class ModeloService {
 
-    private final ModeloRepository modeloRepository;
-    private final MarcaRepository marcaRepository;
-
-    /**
-     * Constructs a ModeloService with the specified repositories.
-     *
-     * @param modeloRepository The modelo repository.
-     * @param marcaRepository  The marca repository.
-     */
     @Autowired
-    public ModeloService(ModeloRepository modeloRepository, MarcaRepository marcaRepository) {
-        this.modeloRepository = modeloRepository;
-        this.marcaRepository = marcaRepository;
-    }
+    public ModeloRepository modeloRepository;
+    @Autowired
+    public MarcaRepository marcaRepository;
+    @Autowired
+    private VeiculoRepository veiculoRepository;
 
     /**
      * Validates the information of a new modelo before it is saved to the database.
@@ -61,8 +55,6 @@ public class ModeloService {
         validarIdModelo(modelo.getId());
         validarIdMarca(modelo.getMarca().getId());
         validarMarcaAtiva(modelo.getMarca().getId());
-        List<Modelo> findbyNome = modeloRepository.findByNome(modelo.getNome());
-        Assert.isTrue(findbyNome.isEmpty(),"Nome ja existe no banco de dados.");
         modeloRepository.save(modelo);
     }
 
@@ -72,46 +64,18 @@ public class ModeloService {
      * @param id The ID of the modelo to be validated.
      * @throws IllegalArgumentException If the modelo ID does not exist in the database.
      */
-    @Transactional(readOnly = true, rollbackFor = Exception.class)
+    @Transactional
     public void validarDeleteModelo(Long id) {
-        validarIdModelo(id);
-    }
 
-    /**
-     * Validates if a modelo name is already registered in the database.
-     *
-     * @param modelo the modelo to be validated.
-     * @throws IllegalArgumentException If a modelo with the provided name already exists.
-     */
-    private void validarNomeModelo(Modelo modelo) {
-        // Verificar se o nome do modelo já existe no banco de dados
-        final List<Modelo> modelosByNome = this.modeloRepository.findByNome(modelo.getNome());
-        Assert.isTrue(modelosByNome.isEmpty(),
-                "Um modelo já está registrado com o nome informado. " +
-                        "Por favor, verifique os dados informados e tente novamente.");
-    }
+        final Modelo modeloBanco = this.modeloRepository.findById(id).orElse(null);
+        Assert.notNull(modeloBanco, "Modelo não encontrado!");
 
-    /**
-     * Validates if a marca ID is provided and exists in the database.
-     *
-     * @param marcaId The ID of the marca associated with the modelo.
-     * @throws IllegalArgumentException If the marca ID is not provided or does not exist in the database.
-     */
-    private void validarIdMarca(Long marcaId) {
-        Assert.notNull(marcaId, "O ID da marca em modelo não pode ser nulo.");
-        Assert.isTrue(marcaRepository.existsById(marcaId),
-                "Não foi possível salvar o modelo, pois a marca associada não foi encontrada.");
-    }
-
-    /**
-     * Validates if the marca associated with the modelo is active.
-     *
-     * @param marcaId The ID of the marca associated with the modelo.
-     * @throws IllegalArgumentException If the marca associated with the modelo is inactive.
-     */
-    private void validarMarcaAtiva(Long marcaId) {
-        final List<Marca> isActive = marcaRepository.findActiveElement(marcaId);
-        Assert.isTrue(!isActive.isEmpty(), "A marca associada a esse modelo está inativa.");
+        if (!this.veiculoRepository.findByModeloId(id).isEmpty()) {
+            modeloBanco.setAtivo(false);
+            this.modeloRepository.save(modeloBanco);
+        } else {
+            this.modeloRepository.delete(modeloBanco);
+        }
     }
 
     /**
@@ -126,4 +90,37 @@ public class ModeloService {
         Assert.isTrue(modeloRepository.existsById(modeloId),
                 "Não foi possível apagar o modelo, pois oID  não foi encontrado.");
     }
+
+    /**
+     * Validates if the marca associated with the modelo is active.
+     *
+     * @param marcaId The ID of the marca associated with the modelo.
+     * @throws IllegalArgumentException If the marca associated with the modelo is inactive.
+     */
+    private void validarMarcaAtiva(Long marcaId) {
+        final List<Marca> isActive = marcaRepository.findActiveElement(marcaId);
+        Assert.isTrue(!isActive.isEmpty(), "A marca associada a esse modelo está inativa.");
+    }
+
+    /**
+     * Validates if a marca ID is provided and exists in the database.
+     *
+     * @param marcaId The ID of the marca associated with the modelo.
+     * @throws IllegalArgumentException If the marca ID is not provided or does not exist in the database.
+     */
+    private void validarIdMarca(Long marcaId) {
+        Assert.notNull(marcaId, "O ID da marca em modelo não pode ser nulo.");
+        Assert.isTrue(marcaRepository.existsById(marcaId),
+                "Não foi possível salvar o modelo, pois a marca associada não foi encontrada.");
+    }
+
+    private void validarNomeModelo(Modelo modelo) {
+        // Verificar se o nome do modelo já existe no banco de dados
+        final Modelo modelosCurrent = this.modeloRepository.findByNome(modelo.getNome());
+        Assert.isTrue(modelosCurrent == null,
+                "Um modelo já está registrado com o nome informado. " +
+                        "Por favor, verifique os dados informados e tente novamente.");
+    }
+
+
 }

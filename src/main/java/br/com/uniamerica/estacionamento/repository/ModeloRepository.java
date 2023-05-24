@@ -21,7 +21,7 @@ public interface ModeloRepository extends JpaRepository<Modelo, Long> {
      * @param nome the name of the model
      * @return a list of models with the specified name
      */
-    public List<Modelo> findByNome(final String nome);
+    public Modelo findByNome(final String nome);
 
     /**
      * Retrieves all active models.
@@ -37,7 +37,7 @@ public interface ModeloRepository extends JpaRepository<Modelo, Long> {
      * @param id the ID of the brand
      * @return a list of models with the specified brand ID
      */
-    @Query(value = "SELECT * FROM modelos WHERE marca_id = :id", nativeQuery = true)
+    @Query("FROM Modelo WHERE id = :id")
     public List<Modelo> findByMarcaId(@Param("id") Long id);
 
     /**

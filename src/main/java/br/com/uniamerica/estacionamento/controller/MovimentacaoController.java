@@ -61,9 +61,14 @@ public class MovimentacaoController {
     public ResponseEntity<?> registerMovimentacao(@RequestBody @Validated final Movimentacao movimentacao) {
         try {
             movimentacaoService.validarCadastroMovimentacao(movimentacao);
-            return ResponseEntity.ok("Registro Cadastrado com Sucesso");
+            if (movimentacao.getSaida() != null){
+                String relatorio = movimentacaoService.emitirRelatorio(movimentacao);
+                return ResponseEntity.ok(relatorio);
+            }else{
+                return ResponseEntity.ok("Registro Cadastrado com Sucesso");
+            }
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e);
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -77,9 +82,14 @@ public class MovimentacaoController {
     public ResponseEntity<?> editarMovimentacao(@RequestBody @Validated final Movimentacao movimentacao) {
         try {
             movimentacaoService.validarUpdateMovimentacao(movimentacao);
-            return ResponseEntity.ok("Registro atualizado com sucesso");
+            if (movimentacao.getSaida() != null){
+                String relatorio = movimentacaoService.emitirRelatorio(movimentacao);
+                return ResponseEntity.ok(relatorio);
+            }else{
+                return ResponseEntity.ok("Registro Atualizado com Sucesso");
+            }
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(e);
         }
     }
 
@@ -90,7 +100,7 @@ public class MovimentacaoController {
      * @return ResponseEntity indicating the success or failure of the operation.
      */
     @DeleteMapping
-    public ResponseEntity<?> excluirCondutor(@RequestParam("id") final Long id) {
+    public ResponseEntity<?> excluirMovimentacao(@RequestParam("id") final Long id) {
         try {
             movimentacaoService.validarDeleteMovimentacao(id);
             return ResponseEntity.ok("Registro apagado com sucesso");

@@ -89,6 +89,12 @@ public class MovimentacaoService {
     @Transactional
     public void validarUpdateMovimentacao(Movimentacao movimentacao) {
 
+        Configuracao configuracao = obterConfiguracao();
+
+        BigDecimal valorMinutoMulta = configuracao.getValorMinutoMulta();
+        movimentacao.setValorHoraMulta(valorMinutoMulta.multiply(new BigDecimal("60.0")));
+        movimentacao.setValorHora(configuracao.getValorHora());
+
         movimentacao.setAtualizacao(LocalDateTime.now());
         Assert.notNull(movimentacao.getId(), "O ID da movimentação fornecida é nulo.");
 
@@ -120,13 +126,14 @@ public class MovimentacaoService {
      * @throws IllegalArgumentException se o ID da movimentação não existir no banco de dados
      */
     @Transactional
-    public void validarDeleteMovimentacao(Long id) {
+    public void validarDeleteMovimentacao(Long id){
+        /*
+         * Verifica se a Movimentação informada existe
+         * */
+        final Movimentacao movimentacao = this.movimentacaoRepository.findById(id).orElse(null);
+        Assert.notNull(movimentacao, "Movimentação não encontrada!");
 
-        // Verificar se o ID do movimentacao existe no banco de dados
-        Assert.isTrue(movimentacaoRepository.existsById(id),
-                "O ID da movimentação especificada não foi encontrada na base de dados. " +
-                        "Por favor, verifique se o ID está correto e tente novamente.");
-
+       movimentacaoRepository.delete(movimentacao);
     }
 
     private void validarMovimentacao(Movimentacao movimentacao) {
@@ -358,8 +365,7 @@ public class MovimentacaoService {
 
     }
 
-
-    private void emitirRelatorio(Movimentacao movimentacao) {
+    public String emitirRelatorio(Movimentacao movimentacao) {
         String nomeCondutor = condutorRepository.findByNome(movimentacao.getCondutor().getId());
         String phoneCondutor = condutorRepository.findByPhone(movimentacao.getCondutor().getId());
         String placaVeiculo = veiculoRepository.findByPlacaID(movimentacao.getVeiculo().getId());
@@ -407,6 +413,7 @@ public class MovimentacaoService {
         reportBuilder.append("╚═════════════════════════════════════════════════════╝\n");
 
         System.out.println(reportBuilder.toString());
+        return reportBuilder.toString();
     }
 
 

@@ -56,7 +56,7 @@ public interface VeiculoRepository extends JpaRepository<Veiculo, Long> {
      * @param id the ID of the model
      * @return a list of movements associated with the specified model ID
      */
-    @Query(value = "FROM veiculos WHERE modelo.id = :id", nativeQuery = true)
+    @Query("FROM Veiculo WHERE id = :id")
     public List<Movimentacao> findByModeloId(@Param("id") final Long id);
 
     /**

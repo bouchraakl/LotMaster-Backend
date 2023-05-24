@@ -21,7 +21,7 @@ public interface ModeloRepository extends JpaRepository<Modelo, Long> {
      * @param nome the name of the model
      * @return a list of models with the specified name
      */
-    public List<Modelo> findByNome(final String nome);
+    public Modelo findByNome(final String nome);
 
     /**
      * Retrieves all active models.

@@ -5,9 +5,12 @@
 package br.com.uniamerica.estacionamento.service;
 
 import br.com.uniamerica.estacionamento.entity.Condutor;
+import br.com.uniamerica.estacionamento.entity.Marca;
 import br.com.uniamerica.estacionamento.repository.CondutorRepository;
 import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -96,5 +99,9 @@ public class CondutorService {
         }else{
             this.condutorRepository.delete(condutorBanco);
         }
+    }
+
+    public Page<Condutor> listAll(Pageable pageable) {
+        return this.condutorRepository.findAll(pageable);
     }
 }

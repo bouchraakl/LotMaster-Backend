@@ -6,6 +6,8 @@ import br.com.uniamerica.estacionamento.repository.ModeloRepository;
 import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
 import br.com.uniamerica.estacionamento.repository.VeiculoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Range;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -174,6 +176,10 @@ public class VeiculoService {
         }else{
             this.veiculoRepository.delete(veiculoBanco);
         }
+    }
+
+    public Page<Veiculo> listAll(Pageable pageable) {
+        return this.veiculoRepository.findAll(pageable);
     }
 
 

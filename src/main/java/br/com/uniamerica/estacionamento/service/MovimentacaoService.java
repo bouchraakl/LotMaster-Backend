@@ -7,6 +7,8 @@ import br.com.uniamerica.estacionamento.entity.*;
 import br.com.uniamerica.estacionamento.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -133,7 +135,7 @@ public class MovimentacaoService {
         final Movimentacao movimentacao = this.movimentacaoRepository.findById(id).orElse(null);
         Assert.notNull(movimentacao, "Movimentação não encontrada!");
 
-       movimentacaoRepository.delete(movimentacao);
+        movimentacaoRepository.delete(movimentacao);
     }
 
     private void validarMovimentacao(Movimentacao movimentacao) {
@@ -408,6 +410,10 @@ public class MovimentacaoService {
 
         System.out.println(reportBuilder.toString());
         return reportBuilder.toString();
+    }
+
+    public Page<Movimentacao> listAll(Pageable pageable) {
+        return this.movimentacaoRepository.findAll(pageable);
     }
 
 

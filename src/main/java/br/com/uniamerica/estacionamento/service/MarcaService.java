@@ -4,6 +4,8 @@ import br.com.uniamerica.estacionamento.entity.Marca;
 import br.com.uniamerica.estacionamento.repository.MarcaRepository;
 import br.com.uniamerica.estacionamento.repository.ModeloRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
@@ -79,18 +81,10 @@ public class MarcaService {
         final Marca marcaBanco = this.marcaRepository.findById(id).orElse(null);
         Assert.notNull(marcaBanco, "Marca não encontrada!");
 
-        /*
-         * Verifica se a Marca informado está relacionado a um Modelo,
-         * True: Desativa o cadastro
-         * False: Faz o DELETE do registro
-         * */
-        if(!this.modeloRepository.findByMarcaId(id).isEmpty()){
-            marcaBanco.setAtivo(false);
-            this.marcaRepository.save(marcaBanco);
-        }else{
-            this.marcaRepository.delete(marcaBanco);
-        }
-
+        this.marcaRepository.delete(marcaBanco);
     }
 
+    public Page<Marca> listAll(Pageable pageable) {
+        return this.marcaRepository.findAll(pageable);
+    }
 }

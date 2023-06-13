@@ -6,6 +6,8 @@ import br.com.uniamerica.estacionamento.repository.MarcaRepository;
 import br.com.uniamerica.estacionamento.repository.ModeloRepository;
 import br.com.uniamerica.estacionamento.repository.VeiculoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -122,5 +124,8 @@ public class ModeloService {
                         "Por favor, verifique os dados informados e tente novamente.");
     }
 
+    public Page<Modelo> listAll(Pageable pageable) {
+        return this.modeloRepository.findAll(pageable);
+    }
 
 }

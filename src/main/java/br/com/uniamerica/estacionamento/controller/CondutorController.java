@@ -1,10 +1,13 @@
 package br.com.uniamerica.estacionamento.controller;
 
 import br.com.uniamerica.estacionamento.entity.Condutor;
+import br.com.uniamerica.estacionamento.entity.Marca;
 import br.com.uniamerica.estacionamento.repository.CondutorRepository;
 import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
 import br.com.uniamerica.estacionamento.service.CondutorService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
@@ -29,8 +32,8 @@ public class CondutorController {
      * @param id The ID of the Condutor to retrieve.
      * @return ResponseEntity with the Condutor if found, otherwise a bad request response.
      */
-    @GetMapping
-    public ResponseEntity<?> findByIdRequest(@RequestParam("id") final Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getByIdRequest(@PathVariable("id") Long id) {
         final Condutor condutor = condutorRepository.findById(id).orElse(null);
         return condutor == null ? ResponseEntity.badRequest().body("ID não encontrado") : ResponseEntity.ok(condutor);
     }
@@ -40,11 +43,10 @@ public class CondutorController {
      *
      * @return ResponseEntity with a list of all Condutores.
      */
-    @GetMapping("/all")
-    public ResponseEntity<?> findAllRequest() {
-        return ResponseEntity.ok(condutorRepository.findAll());
+    @GetMapping
+    public ResponseEntity<Page<Condutor>> getAllRequest(Pageable pageable) {
+        return ResponseEntity.ok(this.condutorService.listAll(pageable));
     }
-
     /**
      * Retrieves all active Condutores.
      *

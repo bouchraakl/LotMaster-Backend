@@ -1,10 +1,13 @@
 package br.com.uniamerica.estacionamento.controller;
 
+import br.com.uniamerica.estacionamento.entity.Marca;
 import br.com.uniamerica.estacionamento.entity.Veiculo;
 import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
 import br.com.uniamerica.estacionamento.repository.VeiculoRepository;
 import br.com.uniamerica.estacionamento.service.VeiculoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -30,8 +33,8 @@ public class VeiculoController {
      * @param id The ID of the Veiculo to retrieve.
      * @return ResponseEntity with the Veiculo if found, otherwise a bad request response.
      */
-    @GetMapping
-    public ResponseEntity<?> findByIdRequest(@RequestParam("id") final Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getByIdRequest(@PathVariable("id") Long id)  {
         final Veiculo veiculo = veiculoRepository.findById(id).orElse(null);
         return veiculo == null ? ResponseEntity.badRequest().body("ID não encontrado") : ResponseEntity.ok(veiculo);
     }
@@ -41,11 +44,10 @@ public class VeiculoController {
      *
      * @return ResponseEntity with a list of all Veiculos.
      */
-    @GetMapping("/all")
-    public ResponseEntity<?> findAllRequest() {
-        return ResponseEntity.ok(veiculoRepository.findAll());
+    @GetMapping
+    public ResponseEntity<Page<Veiculo>> getAllRequest(Pageable pageable) {
+        return ResponseEntity.ok(this.veiculoService.listAll(pageable));
     }
-
     /**
      * Retrieves active Veiculos.
      *

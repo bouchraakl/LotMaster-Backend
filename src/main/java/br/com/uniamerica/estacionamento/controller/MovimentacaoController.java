@@ -1,9 +1,12 @@
 package br.com.uniamerica.estacionamento.controller;
 
+import br.com.uniamerica.estacionamento.entity.Marca;
 import br.com.uniamerica.estacionamento.entity.Movimentacao;
 import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
 import br.com.uniamerica.estacionamento.service.MovimentacaoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
@@ -25,8 +28,8 @@ public class MovimentacaoController {
      * @param id The ID of the Movimentacao to retrieve.
      * @return ResponseEntity with the Movimentacao if found, otherwise a bad request response.
      */
-    @GetMapping
-    public ResponseEntity<?> findByIdRequest(@RequestParam("id") final Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getByIdRequest(@PathVariable("id") Long id) {
         final Movimentacao movimentacao = movimentacaoRepository.findById(id).orElse(null);
         return movimentacao == null ? ResponseEntity.badRequest().body("ID não encontrado") : ResponseEntity.ok(movimentacao);
     }
@@ -36,11 +39,10 @@ public class MovimentacaoController {
      *
      * @return ResponseEntity with a list of all Movimentacoes.
      */
-    @GetMapping("/all")
-    public ResponseEntity<?> findAllRequest() {
-        return ResponseEntity.ok(movimentacaoRepository.findAll());
+    @GetMapping
+    public ResponseEntity<Page<Movimentacao>> getAllRequest(Pageable pageable) {
+        return ResponseEntity.ok(this.movimentacaoService.listAll(pageable));
     }
-
     /**
      * Retrieves open Movimentacoes.
      *
@@ -49,6 +51,11 @@ public class MovimentacaoController {
     @GetMapping("/abertas")
     public ResponseEntity<?> findMovimentacoesAbertas() {
         return ResponseEntity.ok(movimentacaoRepository.findAllAbertas());
+    }
+
+    @GetMapping("/closed")
+    public ResponseEntity<?> findMovimentacoesFechadas() {
+        return ResponseEntity.ok(movimentacaoRepository.findAllFechadas());
     }
 
     /**

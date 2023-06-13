@@ -1,10 +1,13 @@
 package br.com.uniamerica.estacionamento.controller;
 
+import br.com.uniamerica.estacionamento.entity.Marca;
 import br.com.uniamerica.estacionamento.entity.Modelo;
 import br.com.uniamerica.estacionamento.repository.ModeloRepository;
 import br.com.uniamerica.estacionamento.repository.VeiculoRepository;
 import br.com.uniamerica.estacionamento.service.ModeloService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -30,8 +33,8 @@ public class ModeloController {
      * @param id The ID of the Modelo to retrieve.
      * @return ResponseEntity with the Modelo if found, otherwise a bad request response.
      */
-    @GetMapping
-    public ResponseEntity<?> findByIdRequest(@RequestParam("id") final Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getByIdRequest(@PathVariable("id") Long id) {
         final Modelo modelo = modeloRepository.findById(id).orElse(null);
         return modelo == null ? ResponseEntity.badRequest().body("ID não encontrado") : ResponseEntity.ok(modelo);
     }
@@ -41,11 +44,10 @@ public class ModeloController {
      *
      * @return ResponseEntity with a list of all Modelos.
      */
-    @GetMapping("/all")
-    public ResponseEntity<?> findAllRequest() {
-        return ResponseEntity.ok(modeloRepository.findAll());
+    @GetMapping
+    public ResponseEntity<Page<Modelo>> getAllRequest(Pageable pageable) {
+        return ResponseEntity.ok(this.modeloService.listAll(pageable));
     }
-
     /**
      * Retrieves active Modelos.
      *

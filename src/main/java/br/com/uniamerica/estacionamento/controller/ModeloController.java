@@ -48,6 +48,24 @@ public class ModeloController {
     public ResponseEntity<Page<Modelo>> getAllRequest(Pageable pageable) {
         return ResponseEntity.ok(this.modeloService.listAll(pageable));
     }
+
+    @GetMapping("/all")
+    public ResponseEntity<?> getAll() {
+        return ResponseEntity.ok(this.modeloRepository.findAll());
+    }
+
+    @GetMapping("/nome")
+    public ResponseEntity<?> getByNome(@RequestParam("nome") String nome) {
+        final Modelo modelo = this.modeloRepository.findByNome(nome);
+
+        if (modelo == null || modelo.getNome() == null) {
+            return ResponseEntity.badRequest().body("nome inválido");
+        }
+
+        return ResponseEntity.ok(modelo);
+    }
+
+
     /**
      * Retrieves active Modelos.
      *

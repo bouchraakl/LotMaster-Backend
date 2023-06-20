@@ -19,7 +19,10 @@ public interface MarcaRepository extends JpaRepository<Marca, Long> {
      * @param nome the name of the brand
      * @return a list of brands with the specified name
      */
-    public List<Marca> findByNome(final String nome);
+
+    @Query("SELECT m FROM Marca m WHERE m.nome like :nome")
+    public Marca findByNome(@Param("nome") final String nome);
+
 
     /**
      * Retrieves the name of the brand with the specified ID.

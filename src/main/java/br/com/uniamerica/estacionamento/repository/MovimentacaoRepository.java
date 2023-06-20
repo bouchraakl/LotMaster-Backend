@@ -55,5 +55,6 @@ public interface MovimentacaoRepository extends JpaRepository<Movimentacao, Long
 
     @Query("from Movimentacao where saida != null")
     public List<Movimentacao> findAllFechadas();
-
+    @Query("SELECT m FROM Movimentacao m ORDER BY m.entrada DESC LIMIT 4")
+    List<Movimentacao> findLastFiveByOrderByEntryDateDesc();
 }

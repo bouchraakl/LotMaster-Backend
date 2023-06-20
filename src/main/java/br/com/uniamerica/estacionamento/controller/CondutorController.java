@@ -2,6 +2,7 @@ package br.com.uniamerica.estacionamento.controller;
 
 import br.com.uniamerica.estacionamento.entity.Condutor;
 import br.com.uniamerica.estacionamento.entity.Marca;
+import br.com.uniamerica.estacionamento.entity.Veiculo;
 import br.com.uniamerica.estacionamento.repository.CondutorRepository;
 import br.com.uniamerica.estacionamento.repository.MovimentacaoRepository;
 import br.com.uniamerica.estacionamento.service.CondutorService;
@@ -12,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value = "api/condutor")
@@ -47,6 +50,36 @@ public class CondutorController {
     public ResponseEntity<Page<Condutor>> getAllRequest(Pageable pageable) {
         return ResponseEntity.ok(this.condutorService.listAll(pageable));
     }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<Condutor>> getAll() {
+        return ResponseEntity.ok(
+                this.condutorRepository.findAll()
+        );
+    }
+
+    @GetMapping("/nome")
+    public ResponseEntity<?> getByNome(@RequestParam("nome") String nome) {
+        final Condutor condutor = this.condutorRepository.findByNome(nome);
+
+        if (condutor == null || condutor.getNome() == null) {
+            return ResponseEntity.badRequest().body("nome inválido");
+        }
+
+        return ResponseEntity.ok(condutor);
+    }
+
+    @GetMapping("/cpf")
+    public ResponseEntity<?> getByCPF(@RequestParam("cpf") String cpf) {
+        final Condutor condutor = this.condutorRepository.findbyCPF(cpf);
+
+        if (condutor == null || condutor.getCpf() == null) {
+            return ResponseEntity.badRequest().body("cpf inválido");
+        }
+
+        return ResponseEntity.ok(condutor);
+    }
+
     /**
      * Retrieves all active Condutores.
      *

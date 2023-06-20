@@ -39,9 +39,10 @@ public class ModeloService {
     @Transactional
     public void validarCadastroModelo(Modelo modelo) {
         modelo.setCadastro(LocalDateTime.now());
-        validarNomeModelo(modelo);
-        validarIdMarca(modelo.getMarca().getId());
-        validarMarcaAtiva(modelo.getMarca().getId());
+        // Verificar se o ID da marca foi informado e se ele existe no banco de dados
+        Assert.notNull(modelo.getMarca().getId(), "It was not possible to save the model because the associated brand was not found.");
+        Assert.isTrue(marcaRepository.existsById(modelo.getMarca().getId()),
+                "Não foi possível salvar o modelo, pois a marca associada não foi encontrada.");
         modeloRepository.save(modelo);
     }
 
@@ -54,9 +55,6 @@ public class ModeloService {
     @Transactional
     public void validarUpdateModelo(Modelo modelo) {
         modelo.setAtualizacao(LocalDateTime.now());
-        validarIdModelo(modelo.getId());
-        validarIdMarca(modelo.getMarca().getId());
-        validarMarcaAtiva(modelo.getMarca().getId());
         modeloRepository.save(modelo);
     }
 

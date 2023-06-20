@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 /* ----------------------------------------------------- */
 @NotNull
 public enum Tipo {
-    CARRO,
-    MOTO,
+    CAR,
+    MOTORCYCLE,
     VAN
 }

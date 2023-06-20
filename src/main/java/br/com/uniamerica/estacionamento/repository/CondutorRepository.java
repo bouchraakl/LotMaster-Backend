@@ -5,6 +5,7 @@
 package br.com.uniamerica.estacionamento.repository;
 
 import br.com.uniamerica.estacionamento.entity.Condutor;
+import br.com.uniamerica.estacionamento.entity.Marca;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,7 +21,11 @@ public interface CondutorRepository extends JpaRepository<Condutor, Long> {
      * @return the name of the condutor
      */
     @Query("SELECT c.nome FROM Condutor c WHERE c.id = :id")
-    public String findByNome(@Param("id") Long id);
+    public String findByNomeId(@Param("id") Long id);
+
+    @Query("SELECT c FROM Condutor c WHERE c.nome like :nome")
+    public Condutor findByNome(@Param("nome") final String nome);
+
 
     /**
      * Finds a condutor by their CPF.
@@ -28,7 +33,7 @@ public interface CondutorRepository extends JpaRepository<Condutor, Long> {
      * @param cpf the CPF of the condutor
      * @return the condutor with the specified CPF
      */
-    @Query("from Condutor where cpf = :cpf")
+    @Query("SELECT c FROM Condutor c where c.cpf like :cpf")
     public Condutor findbyCPF(@Param("cpf") final String cpf);
 
     /**

@@ -48,6 +48,25 @@ public class MarcaController {
         return ResponseEntity.ok(this.marcaService.listAll(pageable));
     }
 
+    @GetMapping("/all")
+    public ResponseEntity<?> getAll() {
+        return ResponseEntity.ok(this.marcaRepository.findAll());
+    }
+
+
+    @GetMapping("/nome")
+    public ResponseEntity<?> getByNome(@RequestParam("nome") String nome) {
+        final Marca marca = this.marcaRepository.findByNome(nome);
+
+        if (marca == null || marca.getNome() == null) {
+            return ResponseEntity.badRequest().body("nome inválido");
+        }
+
+        return ResponseEntity.ok(marca);
+    }
+
+
+
     /**
      * Retrieves active Marcas.
      *

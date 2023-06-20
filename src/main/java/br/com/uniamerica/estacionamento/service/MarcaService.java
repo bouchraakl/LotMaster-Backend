@@ -1,6 +1,7 @@
 package br.com.uniamerica.estacionamento.service;
 
 import br.com.uniamerica.estacionamento.entity.Marca;
+import br.com.uniamerica.estacionamento.entity.Veiculo;
 import br.com.uniamerica.estacionamento.repository.MarcaRepository;
 import br.com.uniamerica.estacionamento.repository.ModeloRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,10 +38,9 @@ public class MarcaService {
 
         marca.setCadastro(LocalDateTime.now());
 
-        List<Marca> marcaExistente = marcaRepository.findByNome(marca.getNome());
-        Assert.isTrue(marcaExistente.isEmpty(),
-                "Já existe uma marca registrada com o nome informado. " +
-                        "Verifique os dados informados e tente novamente.");
+        Marca marcasByNome = marcaRepository.findByNome(marca.getNome());
+        Assert.isNull(marcasByNome,
+                "A brand is already registered with the provided name. Please verify the information and try again.");
 
         marcaRepository.save(marca);
     }
@@ -56,14 +56,6 @@ public class MarcaService {
 
         marca.setAtualizacao(LocalDateTime.now());
 
-        Assert.notNull(marca.getId(),
-                "O ID da marca fornecido é nulo. " +
-                        "Certifique-se de que o objeto da marca tenha um ID válido antes de realizar essa operação.");
-
-        Assert.isTrue(marcaRepository.existsById(marca.getId()),
-                "O ID da marca especificada não foi encontrado na base de dados. " +
-                        "Verifique se o ID está correto e tente novamente.");
-
         marcaRepository.save(marca);
     }
 
@@ -75,13 +67,16 @@ public class MarcaService {
      */
     @Transactional
     public void validarDeleteMarca(Long id){
-        /*
-         * Verifica se a Marca informado existe
-         * */
-        final Marca marcaBanco = this.marcaRepository.findById(id).orElse(null);
-        Assert.notNull(marcaBanco, "Marca não encontrada!");
 
-        this.marcaRepository.delete(marcaBanco);
+        final Marca marca = this.marcaRepository.findById(id).orElse(null);
+        Assert.notNull(marca, "Marca não encontrado!");
+
+        if(!this.modeloRepository.findByMarcaId(id).isEmpty()){
+            marca.setAtivo(false);
+            this.marcaRepository.save(marca);
+        }else{
+            this.marcaRepository.delete(marca);
+        }
     }
 
     public Page<Marca> listAll(Pageable pageable) {

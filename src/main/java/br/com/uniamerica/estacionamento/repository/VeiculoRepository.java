@@ -76,4 +76,10 @@ public interface VeiculoRepository extends JpaRepository<Veiculo, Long> {
      */
     @Query("SELECT v.tipo FROM Veiculo v WHERE v.id = :id")
     Tipo getTipoVeiculo(@Param("id") Long id);
+
+    @Query("SELECT COUNT(v) > 0 FROM Veiculo v WHERE v.placa = :placa AND v.id <> :id")
+    boolean existsByPlacaAndIdNot(@Param("placa") String placa, @Param("id") Long id);
+
+    @Query("SELECT COUNT(v) > 0 FROM Veiculo v WHERE v.placa = :placa")
+    boolean existsByPlaca(@Param("placa") String placa);
 }

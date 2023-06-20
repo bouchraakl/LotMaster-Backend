@@ -6,10 +6,10 @@ import jakarta.validation.constraints.NotNull;
 /* ----------------------------------------------------- */
 @NotNull
 public enum Cor {
-    PRATA,
-    CINZA,
-    BRANCO,
-    PRETO,
-    ROSA,
-    AZUL
+    SILVER,
+    GRAY,
+    WHITE,
+    BLACK,
+    PINK,
+    BLUE
 }

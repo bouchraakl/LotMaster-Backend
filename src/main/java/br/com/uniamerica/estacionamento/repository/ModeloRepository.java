@@ -4,6 +4,7 @@
  */
 package br.com.uniamerica.estacionamento.repository;
 
+import br.com.uniamerica.estacionamento.entity.Marca;
 import br.com.uniamerica.estacionamento.entity.Modelo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,7 +22,9 @@ public interface ModeloRepository extends JpaRepository<Modelo, Long> {
      * @param nome the name of the model
      * @return a list of models with the specified name
      */
-    public Modelo findByNome(final String nome);
+    @Query("SELECT m FROM Modelo m WHERE m.nome like :nome")
+    public Modelo findByNome(@Param("nome") final String nome);
+
 
     /**
      * Retrieves all active models.

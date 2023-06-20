@@ -48,6 +48,14 @@ public class VeiculoController {
     public ResponseEntity<Page<Veiculo>> getAllRequest(Pageable pageable) {
         return ResponseEntity.ok(this.veiculoService.listAll(pageable));
     }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<Veiculo>> getAll() {
+        return ResponseEntity.ok(
+                this.veiculoRepository.findAll()
+        );
+    }
+
     /**
      * Retrieves active Veiculos.
      *
@@ -61,6 +69,17 @@ public class VeiculoController {
         } else {
             return ResponseEntity.ok(veiculoList);
         }
+    }
+
+    @GetMapping("/placa")
+    public ResponseEntity<?> getByPlaca(@RequestParam("placa") String placa) {
+        final Veiculo veiculo = this.veiculoRepository.findByPlaca(placa);
+
+        if (veiculo == null || veiculo.getPlaca() == null) {
+            return ResponseEntity.badRequest().body("placa inválida");
+        }
+
+        return ResponseEntity.ok(veiculo);
     }
 
     /**

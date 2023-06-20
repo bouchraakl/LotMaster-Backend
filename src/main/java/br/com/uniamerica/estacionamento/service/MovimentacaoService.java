@@ -47,7 +47,7 @@ public class MovimentacaoService {
     private Configuracao obterConfiguracao() {
         Configuracao configuracao = configuracaoRepository.ultimaConfiguracao();
         if (configuracao == null) {
-            throw new EntityNotFoundException("Erro, as configuracoes nao foram definidas.");
+            throw new EntityNotFoundException("Error, the configurations were not defined.");
         }
         return configuracao;
     }
@@ -64,16 +64,17 @@ public class MovimentacaoService {
         Configuracao configuracao = obterConfiguracao();
 
         BigDecimal valorMinutoMulta = configuracao.getValorMinutoMulta();
+        System.out.println(valorMinutoMulta);
         movimentacao.setValorHoraMulta(valorMinutoMulta.multiply(new BigDecimal("60.0")));
         movimentacao.setValorHora(configuracao.getValorHora());
-
 
         validarMovimentacao(movimentacao);
         verificarVagasDisponiveis(movimentacao);
 
         if (movimentacao.getSaida() != null) {
-            Assert.isTrue(movimentacao.getEntrada().isBefore(movimentacao.getSaida()),
-                    "O tempo de entrada deve ser posterior ao tempo de saída.");
+//            Assert.isTrue(movimentacao.getEntrada().isBefore(movimentacao.getSaida()),
+//                    "The entry time must be before the exit time.");
+
             saidaOperations(movimentacao);
             emitirRelatorio(movimentacao);
         } else {
@@ -98,11 +99,10 @@ public class MovimentacaoService {
         movimentacao.setValorHora(configuracao.getValorHora());
 
         movimentacao.setAtualizacao(LocalDateTime.now());
-        Assert.notNull(movimentacao.getId(), "O ID da movimentação fornecida é nulo.");
+        Assert.notNull(movimentacao.getId(), "The ID of the provided movement is null.");
 
         Assert.isTrue(movimentacaoRepository.existsById(movimentacao.getId()),
-                "O ID da movimentação especificada não foi encontrada na base de dados.");
-
+                "The specified movement ID was not found in the database.");
 
         verificarVagasDisponiveis(movimentacao);
         validarMovimentacao(movimentacao);
@@ -110,7 +110,7 @@ public class MovimentacaoService {
 
         if (movimentacao.getSaida() != null) {
             Assert.isTrue(movimentacao.getEntrada().isBefore(movimentacao.getSaida()),
-                    "O tempo de entrada deve ser posterior ao tempo de saída.");
+                    "The entry time must be before the exit time.");
             saidaOperations(movimentacao);
             emitirRelatorio(movimentacao);
 
@@ -147,41 +147,29 @@ public class MovimentacaoService {
         LocalTime inicioExpediente = obterConfiguracao().getInicioExpediente();
         LocalTime fimExpediente = obterConfiguracao().getFimExpediente();
 
-        boolean isWithinExpediente = !entrada.isBefore(inicioExpediente) && !entrada.isAfter(fimExpediente);
-        Assert.isTrue(isWithinExpediente,
-                "Erro: Horário inválido. O horário atual está fora do intervalo de funcionamento permitido. "
-                        + "Horário de funcionamento: das " + inicioExpediente + " às " + fimExpediente + ".");
-
     }
 
     private void validarCondutor(Condutor condutor) {
 
         // Garantir que o condutor esteja ativo
         final List<Condutor> isActive = condutorRepository.findActiveElement(condutor.getId());
-        Assert.isTrue(!isActive.isEmpty(), "O condutor associado a essa movimentação está inativo.");
+        Assert.isTrue(!isActive.isEmpty(), "The driver associated with this movement is inactive.");
 
-        // Garantir que o ID do condutor não seja nulo
-        Assert.notNull(condutor.getId(), "O ID do condutor em movimentação não pode ser nulo.");
 
         // Garantir que o condutor exista no repositório
         Assert.isTrue(condutorRepository.existsById(condutor.getId()),
-                "Não foi possível registrar a movimentação, " +
-                        "o condutor informado não foi encontrado no sistema.");
+                "Unable to register the movement, the specified driver was not found in the system.");
 
     }
 
     private void validarVeiculo(Veiculo veiculo) {
 
         final List<Veiculo> isActive = veiculoRepository.findActiveElement(veiculo.getId());
-        Assert.isTrue(!isActive.isEmpty(), "O veiculo associado a essa movimentação está inativo.");
-
-        // Garantir que o ID do veículo não seja nulo
-        Assert.notNull(veiculo.getId(), "O ID do veículo em movimentação não pode ser nulo.");
+        Assert.isTrue(!isActive.isEmpty(), "The vehicle associated with this movement is inactive.");
 
         // Garantir que o veículo exista no repositório
         Assert.isTrue(veiculoRepository.existsById(veiculo.getId()),
-                "Não foi possível registrar a movimentação, " +
-                        "o veículo informado não foi encontrado no sistema.");
+                "Unable to register the movement, the specified vehicle was not found in the system.");
 
     }
 
@@ -195,10 +183,12 @@ public class MovimentacaoService {
 
         LocalDateTime entrada = movimentacao.getEntrada();
         LocalDateTime saida = movimentacao.getSaida();
+
         BigDecimal valorMinutoMulta = configuracao.getValorMinutoMulta();
 
         // Calcula a duração entre a entrada e a saída
         Duration duracao = Duration.between(entrada, saida);
+        System.out.println("duracao - saidaOperations : " + duracao);
 
         long totalSecoundsOfDuration = duracao.getSeconds();
         long hours = totalSecoundsOfDuration / 3600;
@@ -339,14 +329,14 @@ public class MovimentacaoService {
         int vagasOccupadas = qtdeVeiculo.size();
 
         int vagasDisponiveis = switch (tipoVeiculo) {
-            case MOTO -> obterConfiguracao().getVagasMoto() - vagasOccupadas;
-            case CARRO -> obterConfiguracao().getVagasCarro() - vagasOccupadas;
+            case MOTORCYCLE -> obterConfiguracao().getVagasMoto() - vagasOccupadas;
+            case CAR -> obterConfiguracao().getVagasCarro() - vagasOccupadas;
             case VAN -> obterConfiguracao().getVagasVan() - vagasOccupadas;
             default -> throw new IllegalArgumentException("Tipo de veículo inválido.");
         };
 
         if (vagasDisponiveis <= 0) {
-            throw new IllegalArgumentException("Não há vagas disponíveis para " +
+            throw new IllegalArgumentException("There are no available parking spaces for " +
                     veiculoRepository.getTipoVeiculo(movimentacao.getVeiculo().getId()).toString());
         }
     }
@@ -362,7 +352,7 @@ public class MovimentacaoService {
     }
 
     public String emitirRelatorio(Movimentacao movimentacao) {
-        String nomeCondutor = condutorRepository.findByNome(movimentacao.getCondutor().getId());
+        String nomeCondutor = condutorRepository.findByNomeId(movimentacao.getCondutor().getId());
         String phoneCondutor = condutorRepository.findByPhone(movimentacao.getCondutor().getId());
         String placaVeiculo = veiculoRepository.findByPlacaID(movimentacao.getVeiculo().getId());
         Tipo tipo = veiculoRepository.getTipoVeiculo(movimentacao.getVeiculo().getId());

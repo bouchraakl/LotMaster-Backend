@@ -13,7 +13,7 @@ public class EstacionamentoApplication {
 
 	public void addCorsMappings(CorsRegistry registry) {
 		registry.addMapping("/**")
-				.allowedOrigins("http://localhost:8080")
+				.allowedOrigins("http://localhost:8082")
 				.allowedMethods("GET", "POST", "PUT", "DELETE")
 				.allowedHeaders("Content-Type")
 				.allowCredentials(true);

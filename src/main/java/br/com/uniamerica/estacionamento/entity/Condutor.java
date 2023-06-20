@@ -39,11 +39,6 @@ public class Condutor extends AbstractEntity {
     @Column(name = "telefone", nullable = false)
     @NotNull(message = "O telefone do condutor não pode ser nulo.")
     @NotBlank(message = "O telefone do condutor não pode ser vazio.")
-
-    @Pattern(regexp = "(^\\+55\\s?\\(\\d{2}\\)\\d{9}$)|(^\\+55\\s?\\(\\d{2}\\)\\s?\\d{5}\\s?\\d{4}$)",
-            message = "O número de telefone fornecido não está no formato válido." +
-                    " O formato deve seguir o padrão: +55(xx)xxxxxxxxx ou +55 (xx) xxxxx xxxx." +
-                    " Por favor, corrija o número de telefone e tente novamente.")
     private String telefone;
 
     @Getter

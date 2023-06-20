@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -40,9 +41,8 @@ public class CondutorService {
     public void validarCadastroCondutor(Condutor condutor) {
         condutor.setCadastro(LocalDateTime.now());
 
-        Assert.isNull(condutorRepository.findbyCPF(condutor.getCpf()),
-                "Um condutor já está registrado com o CPF informado. " +
-                        "Por favor, verifique os dados informados e tente novamente.");
+        final Condutor condutorbyCPF = this.condutorRepository.findbyCPF(condutor.getCpf());
+        Assert.isNull(condutorbyCPF,"CPF already exists");
 
         condutorRepository.save(condutor);
     }
@@ -57,23 +57,6 @@ public class CondutorService {
     @Transactional
     public void validarUpdateCondutor(Condutor condutor) {
         condutor.setAtualizacao(LocalDateTime.now());
-
-        Assert.notNull(condutor.getId(), "O ID do condutor fornecido é nulo. " +
-                "Certifique-se de que o objeto do condutor tenha um ID válido antes de realizar essa operação.");
-
-        Assert.isTrue(condutorRepository.existsById(condutor.getId()),
-                "O ID do condutor especificado não foi encontrado na base de dados. " +
-                        "Por favor, verifique se o ID está correto e tente novamente.");
-
-        Optional<Condutor> condutorAtualOptional = condutorRepository.findById(condutor.getId());
-        if (condutorAtualOptional.isPresent()) {
-            Condutor condutorAtual = condutorAtualOptional.get();
-            if (!condutorAtual.getCpf().equals(condutor.getCpf())) {
-                Assert.isTrue(condutorRepository.findbyCPF(condutor.getCpf()) == null,
-                        "Um condutor já está registrado com o CPF informado. " +
-                                "Por favor, verifique os dados informados e tente novamente.");
-            }
-        }
 
         condutorRepository.save(condutor);
     }

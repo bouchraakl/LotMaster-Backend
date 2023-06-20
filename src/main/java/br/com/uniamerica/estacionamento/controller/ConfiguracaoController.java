@@ -33,6 +33,11 @@ public class ConfiguracaoController {
                 : ResponseEntity.ok(configuracao);
     }
 
+    @GetMapping("/last")
+    public ResponseEntity<?> getLastRequest() {
+        return ResponseEntity.ok(configuracaoRepository.ultimaConfiguracao());
+    }
+
     /**
      * Retrieves all Configuracoes.
      *

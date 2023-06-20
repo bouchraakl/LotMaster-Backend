@@ -28,7 +28,6 @@ public class Veiculo extends AbstractEntity {
     @Column(name = "placa", nullable = false, unique = true)
     @NotNull(message = "A placa do veiculo não pode ser nula.")
     @NotBlank(message = "A placa do veiculo não pode ser vazia.")
-    @Pattern(regexp = "^[a-zA-Z0-9]*$", message = "Caracteres especiais não são permitidos no campo 'placa'")
     @Getter
     @Setter
     private String placa;

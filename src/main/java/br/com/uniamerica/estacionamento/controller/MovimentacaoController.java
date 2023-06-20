@@ -12,6 +12,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("api/movimentacao")
 public class MovimentacaoController {
@@ -57,6 +59,13 @@ public class MovimentacaoController {
     public ResponseEntity<?> findMovimentacoesFechadas() {
         return ResponseEntity.ok(movimentacaoRepository.findAllFechadas());
     }
+
+    @GetMapping("/last-five")
+    public ResponseEntity<?> findMovimentacoesLastFive() {
+        List<Movimentacao> lastFiveMovimentacoes = movimentacaoRepository.findLastFiveByOrderByEntryDateDesc();
+        return ResponseEntity.ok(lastFiveMovimentacoes);
+    }
+
 
     /**
      * Registers a new Movimentacao.

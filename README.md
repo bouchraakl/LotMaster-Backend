@@ -1,6 +1,8 @@
-# Parking Manegment System Backend
+# LotMaster Backend
 
-The Parking Management Backend is a system designed to manage a parking lot, allowing the parking lot owner to easily manage the parking spaces and provide better service to customers. The system provides a variety of features, such as adding new parking lots, managing existing parking spaces, and keeping track of parking fees. The owner can easily manage the parking lot by adding new cars, allocating parking spaces, and tracking the parking time. Overall, the Parking Management Backend provides a complete solution for parking lot management, making it easier for owners to manage their parking lot and providing a better experience for customers.
+Welcome to the API and Backend Implementation readme for the LotMaster System! This document provides comprehensive information about the backend architecture and implementation details of the LotMaster parking management system. By leveraging Java and the Spring Boot framework, the backend offers a powerful and scalable solution for optimizing parking lot operations.
+
+To fully utilize the LotMaster System, please make sure you have set up and run the corresponding [LotMaster Frontend](https://github.com/bouchraakl/LotMaster) repository. The frontend repository contains the user interface and interacts with the backend API to provide a seamless parking management experience.
 
 ## Table of Contents
 

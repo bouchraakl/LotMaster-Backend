@@ -67,15 +67,11 @@ public class ModeloService {
     @Transactional
     public void validarDeleteModelo(Long id) {
 
-        final Modelo modeloBanco = this.modeloRepository.findById(id).orElse(null);
-        Assert.notNull(modeloBanco, "Modelo não encontrado!");
+        final Modelo modelo = this.modeloRepository.findById(id).orElse(null);
+        Assert.notNull(modelo, "Modelo não encontrado!");
 
-        if (!this.veiculoRepository.findByModeloId(id).isEmpty()) {
-            modeloBanco.setAtivo(false);
-            this.modeloRepository.save(modeloBanco);
-        } else {
-            this.modeloRepository.delete(modeloBanco);
-        }
+            this.modeloRepository.delete(modelo);
+
     }
 
     /**

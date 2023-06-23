@@ -23,61 +23,61 @@ public class Configuracao extends AbstractEntity {
     @Getter
     @Setter
     @Column(name = "valor_hora", nullable = false)
-    @NotNull(message = "O valor da hora não pode ser nulo.")
+    @NotNull(message = "The hour rate cannot be null.")
     private BigDecimal valorHora;
 
     @Getter
     @Setter
     @Column(name = "valor_minutomulta", nullable = false)
-    @NotNull(message = "O valor da minuto multa não pode ser nulo.")
+    @NotNull(message = "The minute penalty value cannot be null.")
     private BigDecimal valorMinutoMulta;
 
     @Getter
     @Setter
     @Column(name = "inicio-expediente", nullable = false)
-    @NotNull(message = "O horário de início de expediente não pode ser nulo.")
+    @NotNull(message = "The opening time cannot be null.")
     private LocalTime inicioExpediente;
 
     @Getter
     @Setter
     @Column(name = "fim_expediente", nullable = false)
-    @NotNull(message = "O horário de fim de expediente não pode ser nulo.")
+    @NotNull(message = "The closing time cannot be null.")
     private LocalTime fimExpediente;
 
     @Getter
     @Setter
     @Column(name = "tempo_paradesconto", nullable = false)
-    @NotNull(message = "O tempo para desconto não pode ser nulo.")
+    @NotNull(message = "The discount time limit cannot be null.")
     private int tempoParaDesconto;
 
     @Getter
     @Setter
     @Column(name = "tempo_dedesconto", nullable = false)
-    @NotNull(message = "O tempo de desconto não pode ser nulo.")
+    @NotNull(message = "The discount time value cannot be null.")
     private int tempoDeDesconto;
 
     @Getter
     @Setter
     @Column(name = "gerar_desconto", nullable = false)
-    @NotNull(message = "O campo gerarDesconto não pode ser nulo.")
+    @NotNull(message = "The generate discount field cannot be null.")
     private Boolean gerarDesconto;
 
     @Getter
     @Setter
     @Column(name = "vagas_moto", nullable = false)
-    @NotNull(message = "O campo vagas moto não pode ser nulo.")
+    @NotNull(message = "The motorcycle spaces field cannot be null.")
     private int vagasMoto;
 
     @Getter
     @Setter
     @Column(name = "vagas_carro", nullable = false)
-    @NotNull(message = "O campo vagas carro não pode ser nulo.")
+    @NotNull(message = "The car spaces field cannot be null.")
     private int vagasCarro;
 
     @Getter
     @Setter
     @Column(name = "vagas_van", nullable = false)
-    @NotNull(message = "O campo vagas van não pode ser nulo.")
+    @NotNull(message = "The van spaces field cannot be null.")
     private int vagasVan;
 
 }

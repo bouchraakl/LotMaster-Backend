@@ -40,10 +40,12 @@ public class ModeloService {
     @Transactional
     public void validarCadastroModelo(Modelo modelo) {
         modelo.setCadastro(LocalDateTime.now());
+        // Verificar se o nome do modelo já existe no banco de dados
+        final Modelo existingModel = this.modeloRepository.findByNome(modelo.getNome());
+        Assert.isNull(existingModel, "A model is already registered with the provided name.");
+
         // Verificar se o ID da marca foi informado e se ele existe no banco de dados
         Assert.notNull(modelo.getMarca().getId(), "It was not possible to save the model because the associated brand was not found.");
-        Assert.isTrue(marcaRepository.existsById(modelo.getMarca().getId()),
-                "Não foi possível salvar o modelo, pois a marca associada não foi encontrada.");
         modeloRepository.save(modelo);
     }
 

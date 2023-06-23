@@ -18,27 +18,27 @@ public class Condutor extends AbstractEntity {
     @Getter
     @Setter
     @Column(name = "nome", nullable = false, length = 30)
-    @NotNull(message = "O nome do condutor não pode ser nulo.")
-    @Size(min = 2, max = 30, message = "O nome do condutor deve ter no mínimo 2 caracteres e no máximo 30 caracteres.")
-    @NotBlank(message = "O nome do condutor não pode ser vazio.")
+    @NotNull(message = "The driver's name cannot be null.")
+    @Size(min = 2, max = 30, message = "The driver's name must have at least 2 characters and at most 30 characters.")
+    @NotBlank(message = "The driver's name cannot be empty.")
     private String nome;
 
     @Getter
     @Setter
     @Column(name = "cpf", nullable = false, unique = true, length = 15)
     @CPF
-    @NotNull(message = "O CPF do condutor não pode ser nulo.")
-    @NotBlank(message = "O CPF do condutor não pode ser vazio.")
+    @NotNull(message = "The driver's CPF cannot be null.")
+    @NotBlank(message = "The driver's CPF cannot be empty.")
     @Pattern(regexp = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}",
-            message = "O formato do CPF é inválido. O formato correto é xxx.xxx.xxx-xx.")
+            message = "The CPF format is invalid. The correct format is xxx.xxx.xxx-xx.")
     private String cpf;
 
 
     @Getter
     @Setter
     @Column(name = "telefone", nullable = false)
-    @NotNull(message = "O telefone do condutor não pode ser nulo.")
-    @NotBlank(message = "O telefone do condutor não pode ser vazio.")
+    @NotNull(message = "The driver's phone number cannot be null.")
+    @NotBlank(message = "The driver's phone number cannot be empty.")
     private String telefone;
 
     @Getter

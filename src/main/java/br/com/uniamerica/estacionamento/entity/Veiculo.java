@@ -26,15 +26,15 @@ import org.hibernate.envers.Audited;
 public class Veiculo extends AbstractEntity {
 
     @Column(name = "placa", nullable = false, unique = true)
-    @NotNull(message = "A placa do veiculo não pode ser nula.")
-    @NotBlank(message = "A placa do veiculo não pode ser vazia.")
+    @NotNull(message = "The vehicle's license plate cannot be null.")
+    @NotBlank(message = "The vehicle's license plate cannot be empty.")
     @Getter
     @Setter
     private String placa;
 
     @JoinColumn(name = "modelo_id", nullable = false)
     @ManyToOne
-    @NotNull(message = "O objeto modelo não foi informado.")
+    @NotNull(message = "The model object was not provided.")
     @Getter
     @Setter
     private Modelo modelo;
@@ -46,14 +46,14 @@ public class Veiculo extends AbstractEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "cor", nullable = false)
-    @NotNull(message = "A cor do veículo não pode ser nula.")
+    @NotNull(message = "The vehicle's color cannot be null.")
     @Getter
     @Setter
     private Cor cor;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo", nullable = false)
-    @NotNull(message = "O tipo do veículo não pode ser nulo.")
+    @NotNull(message = "The vehicle's type cannot be null.")
     @Getter
     @Setter
     private Tipo tipo;

@@ -17,16 +17,16 @@ public class Modelo extends AbstractEntity {
     @Getter
     @Setter
     @Column(name = "nome", nullable = false, unique = true, length = 40)
-    @NotNull(message = "O nome do modelo não pode ser nulo.")
-    @NotBlank(message = "O nome do modelo não pode ser vazio.")
-    @Size(min = 2, max = 40, message = "O nome do condutor deve ter no mínimo 2 caracteres e no máximo 40 caracteres.")
+    @NotNull(message = "The model name cannot be null.")
+    @NotBlank(message = "The model name cannot be blank.")
+    @Size(min = 2, max = 40, message = "The model name must have a minimum of 2 characters and a maximum of 40 characters.")
     private String nome;
 
     @Getter
     @Setter
     @JoinColumn(name = "marca_id", nullable = false)
     @ManyToOne(fetch = FetchType.EAGER)
-    @NotNull(message = "O objeto marca não foi informado.")
+    @NotNull(message = "The brand object must be provided.")
     private Marca marca;
 
 }

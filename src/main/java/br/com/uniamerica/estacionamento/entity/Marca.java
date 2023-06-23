@@ -17,9 +17,9 @@ public class Marca extends AbstractEntity {
     @Getter
     @Setter
     @Column(name = "nome", nullable = false, length = 30)
-    @NotNull(message = "O nome da marca não pode ser nula.")
-    @NotBlank(message = "O nome do marca não pode ser vazia.")
-    @Size(min = 2,max = 30,message = "O nome do condutor deve ter no minimo 2 caracteres e no máximo 30 caracteres.")
+    @NotNull(message = "The brand name field is required.")
+    @NotBlank(message = "The brand name field must not be empty.")
+    @Size(min = 2, max = 30, message = "The brand name must be between 2 and 30 characters in length.")
     private String nome;
 
 

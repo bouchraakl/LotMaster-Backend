@@ -21,20 +21,20 @@ public class Movimentacao extends AbstractEntity {
     @Setter
     @ManyToOne
     @JoinColumn(name = "veiculo_id", nullable = false)
-    @NotNull(message = "O objeto veículo não foi informado.")
+    @NotNull(message = "The vehicle object was not provided.")
     private Veiculo veiculo;
 
     @Getter
     @Setter
     @ManyToOne
     @JoinColumn(name = "condutor_id", nullable = false)
-    @NotNull(message = "O objeto condutor não foi informado.")
+    @NotNull(message = "The driver object was not provided.")
     private Condutor condutor;
 
     @Getter
     @Setter
     @Column(name = "entrada", nullable = false)
-    @NotNull(message = "A data de entrada da movimentação não foi informada.")
+    @NotNull(message = "The entry date of the movement was not provided.")
     private LocalDateTime entrada;
 
     @Getter

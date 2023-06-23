@@ -4,6 +4,7 @@
  */
 package br.com.uniamerica.estacionamento.repository;
 
+import br.com.uniamerica.estacionamento.entity.Configuracao;
 import br.com.uniamerica.estacionamento.entity.Movimentacao;
 import br.com.uniamerica.estacionamento.entity.Tipo;
 import br.com.uniamerica.estacionamento.entity.Veiculo;
@@ -50,11 +51,16 @@ public interface MovimentacaoRepository extends JpaRepository<Movimentacao, Long
     @Query("SELECT m FROM Movimentacao m JOIN m.veiculo v WHERE v.tipo = :tipo")
     List<Movimentacao> findByVeiculoTipo(@Param("tipo") Tipo tipo);
 
-    @Query("FROM Movimentacao WHERE id = :id")
-    public List<Movimentacao> findByVeiculoId(@Param("id") final Long id);
+    @Query("SELECT m FROM Movimentacao m JOIN m.veiculo v WHERE v.id = :id")
+    List<Movimentacao> findByVeiculoId(@Param("id") Long id);
+//    @Query("FROM Movimentacao WHERE id = :id")
+//    public List<Movimentacao> findByVeiculoId(@Param("id") final Long id);
 
     @Query("from Movimentacao where saida != null")
     public List<Movimentacao> findAllFechadas();
+
+    @Query(value = "SELECT m FROM Movimentacao m ORDER BY m.id DESC LIMIT 1")
+    Movimentacao ultimaMovimentacao();
     @Query("SELECT m FROM Movimentacao m ORDER BY m.entrada DESC LIMIT 4")
     List<Movimentacao> findLastFiveByOrderByEntryDateDesc();
 }

@@ -66,6 +66,10 @@ public class MovimentacaoController {
         return ResponseEntity.ok(lastFiveMovimentacoes);
     }
 
+    @GetMapping("/last")
+    public ResponseEntity<?> getLastRequest() {
+        return ResponseEntity.ok(movimentacaoRepository.ultimaMovimentacao());
+    }
 
     /**
      * Registers a new Movimentacao.

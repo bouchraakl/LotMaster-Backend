@@ -20,7 +20,6 @@ public class Modelo extends AbstractEntity {
     @NotNull(message = "O nome do modelo não pode ser nulo.")
     @NotBlank(message = "O nome do modelo não pode ser vazio.")
     @Size(min = 2, max = 40, message = "O nome do condutor deve ter no mínimo 2 caracteres e no máximo 40 caracteres.")
-    @Pattern(regexp = "^[a-zA-Z0-9\\s]*$", message = "Caracteres especiais não são permitidos no campo 'nome'")
     private String nome;
 
     @Getter

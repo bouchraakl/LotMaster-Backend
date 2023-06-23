@@ -90,22 +90,15 @@ public class VeiculoService {
     @Transactional
     public void validarDeleteVeiculo(Long id){
 
-        /*
-         * Verifica se o Veiculo informado existe
-         * */
-        final Veiculo veiculoBanco = this.veiculoRepository.findById(id).orElse(null);
-        Assert.notNull(veiculoBanco, "Veiculo não encontrado!");
 
-        /*
-         * Verifica se o Veiculo informado está relacionado a uma Movimentação,
-         * True: Desativa o cadastro
-         * False: Faz o DELETE do registro
-         * */
+        final Veiculo veiculo = this.veiculoRepository.findById(id).orElse(null);
+        Assert.notNull(veiculo, "Veiculo não encontrado!");
+
         if(!this.movimentacaoRepository.findByVeiculoId(id).isEmpty()){
-            veiculoBanco.setAtivo(false);
-            this.veiculoRepository.save(veiculoBanco);
+            veiculo.setAtivo(false);
+            this.veiculoRepository.save(veiculo);
         }else{
-            this.veiculoRepository.delete(veiculoBanco);
+            this.veiculoRepository.delete(veiculo);
         }
     }
 

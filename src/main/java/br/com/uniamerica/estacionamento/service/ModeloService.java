@@ -2,6 +2,7 @@ package br.com.uniamerica.estacionamento.service;
 
 import br.com.uniamerica.estacionamento.entity.Marca;
 import br.com.uniamerica.estacionamento.entity.Modelo;
+import br.com.uniamerica.estacionamento.entity.Veiculo;
 import br.com.uniamerica.estacionamento.repository.MarcaRepository;
 import br.com.uniamerica.estacionamento.repository.ModeloRepository;
 import br.com.uniamerica.estacionamento.repository.VeiculoRepository;
@@ -70,8 +71,12 @@ public class ModeloService {
         final Modelo modelo = this.modeloRepository.findById(id).orElse(null);
         Assert.notNull(modelo, "Modelo não encontrado!");
 
+        if(!this.modeloRepository.findByMarcaId(id).isEmpty()){
+            modelo.setAtivo(false);
+            this.modeloRepository.save(modelo);
+        }else{
             this.modeloRepository.delete(modelo);
-
+        }
     }
 
     /**

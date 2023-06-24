@@ -53,8 +53,6 @@ public interface MovimentacaoRepository extends JpaRepository<Movimentacao, Long
 
     @Query("SELECT m FROM Movimentacao m JOIN m.veiculo v WHERE v.id = :id")
     List<Movimentacao> findByVeiculoId(@Param("id") Long id);
-//    @Query("FROM Movimentacao WHERE id = :id")
-//    public List<Movimentacao> findByVeiculoId(@Param("id") final Long id);
 
     @Query("from Movimentacao where saida != null")
     public List<Movimentacao> findAllFechadas();
@@ -63,4 +61,7 @@ public interface MovimentacaoRepository extends JpaRepository<Movimentacao, Long
     Movimentacao ultimaMovimentacao();
     @Query("SELECT m FROM Movimentacao m ORDER BY m.entrada DESC LIMIT 4")
     List<Movimentacao> findLastFiveByOrderByEntryDateDesc();
+    @Query("SELECT m FROM Movimentacao m JOIN m.veiculo v WHERE v.placa = :placa AND m.saida IS NULL")
+    List<Movimentacao> findMovimentacoesAbertasByPlaca(@Param("placa") String placa);
+
 }

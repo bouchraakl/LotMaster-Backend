@@ -51,9 +51,18 @@ public class MovimentacaoController {
      * @return ResponseEntity with a list of open Movimentacoes.
      */
     @GetMapping("/abertas")
-    public ResponseEntity<?> findMovimentacoesAbertas() {
-        return ResponseEntity.ok(movimentacaoRepository.findAllAbertas());
+    public ResponseEntity<?> findMovimentacoesAbertas(@RequestParam(value = "placa", required = false) String placa) {
+        if (placa != null && !placa.isEmpty()) {
+            // Perform a search based on the placa (vehicle license plate)
+            List<Movimentacao> movimentacoes = movimentacaoRepository.findMovimentacoesAbertasByPlaca(placa);
+            return ResponseEntity.ok(movimentacoes);
+        } else {
+            // Retrieve all open Movimentacoes
+            List<Movimentacao> movimentacoes = movimentacaoRepository.findAllAbertas();
+            return ResponseEntity.ok(movimentacoes);
+        }
     }
+
 
     @GetMapping("/closed")
     public ResponseEntity<?> findMovimentacoesFechadas() {

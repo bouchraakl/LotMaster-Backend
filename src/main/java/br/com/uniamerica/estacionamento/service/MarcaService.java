@@ -40,7 +40,7 @@ public class MarcaService {
 
         Marca marcasByNome = marcaRepository.findByNome(marca.getNome());
         Assert.isNull(marcasByNome,
-                "A brand is already registered with the provided name. Please verify the information and try again.");
+                "A brand is already registered with the provided name.");
 
         marcaRepository.save(marca);
     }

@@ -72,8 +72,8 @@ public class MovimentacaoService {
         verificarVagasDisponiveis(movimentacao);
 
         if (movimentacao.getSaida() != null) {
-//            Assert.isTrue(movimentacao.getEntrada().isBefore(movimentacao.getSaida()),
-//                    "The entry time must be before the exit time.");
+            Assert.isTrue(movimentacao.getEntrada().isBefore(movimentacao.getSaida()),
+                    "The entry time must be before the exit time.");
 
             saidaOperations(movimentacao);
             emitirRelatorio(movimentacao);
@@ -133,7 +133,7 @@ public class MovimentacaoService {
          * Verifica se a Movimentação informada existe
          * */
         final Movimentacao movimentacao = this.movimentacaoRepository.findById(id).orElse(null);
-        Assert.notNull(movimentacao, "Movimentação não encontrada!");
+        Assert.notNull(movimentacao, "Movimentation not found!");
 
         movimentacaoRepository.delete(movimentacao);
     }
@@ -188,7 +188,6 @@ public class MovimentacaoService {
 
         // Calcula a duração entre a entrada e a saída
         Duration duracao = Duration.between(entrada, saida);
-        System.out.println("duracao - saidaOperations : " + duracao);
 
         long totalSecoundsOfDuration = duracao.getSeconds();
         long hours = totalSecoundsOfDuration / 3600;
@@ -332,7 +331,7 @@ public class MovimentacaoService {
             case MOTORCYCLE -> obterConfiguracao().getVagasMoto() - vagasOccupadas;
             case CAR -> obterConfiguracao().getVagasCarro() - vagasOccupadas;
             case VAN -> obterConfiguracao().getVagasVan() - vagasOccupadas;
-            default -> throw new IllegalArgumentException("Tipo de veículo inválido.");
+            default -> throw new IllegalArgumentException("Vehicle type is invalid! ");
         };
 
         if (vagasDisponiveis <= 0) {

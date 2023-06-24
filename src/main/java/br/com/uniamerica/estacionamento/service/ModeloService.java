@@ -73,10 +73,10 @@ public class ModeloService {
         final Modelo modelo = this.modeloRepository.findById(id).orElse(null);
         Assert.notNull(modelo, "Modelo não encontrado!");
 
-        if(!this.modeloRepository.findByMarcaId(id).isEmpty()){
+        if (!this.modeloRepository.findByMarcaId(id).isEmpty()) {
             modelo.setAtivo(false);
             this.modeloRepository.save(modelo);
-        }else{
+        } else {
             this.modeloRepository.delete(modelo);
         }
     }
@@ -102,7 +102,7 @@ public class ModeloService {
      */
     private void validarMarcaAtiva(Long marcaId) {
         final List<Marca> isActive = marcaRepository.findActiveElement(marcaId);
-        Assert.isTrue(!isActive.isEmpty(), "A marca associada a esse modelo está inativa.");
+        Assert.isTrue(!isActive.isEmpty(), "The brand associated with this model is inactive.");
     }
 
     /**
@@ -112,17 +112,18 @@ public class ModeloService {
      * @throws IllegalArgumentException If the marca ID is not provided or does not exist in the database.
      */
     private void validarIdMarca(Long marcaId) {
-        Assert.notNull(marcaId, "O ID da marca em modelo não pode ser nulo.");
+        Assert.notNull(marcaId, "The brand ID in the model cannot be null.");
         Assert.isTrue(marcaRepository.existsById(marcaId),
-                "Não foi possível salvar o modelo, pois a marca associada não foi encontrada.");
+                "Failed to save the model because the associated brand was not found.");
     }
 
     private void validarNomeModelo(Modelo modelo) {
         // Verificar se o nome do modelo já existe no banco de dados
         final Modelo modelosCurrent = this.modeloRepository.findByNome(modelo.getNome());
         Assert.isTrue(modelosCurrent == null,
-                "Um modelo já está registrado com o nome informado. " +
-                        "Por favor, verifique os dados informados e tente novamente.");
+                "A model is already registered with the provided name. " +
+                        "Please check the entered data and try again.");
+
     }
 
     public Page<Modelo> listAll(Pageable pageable) {

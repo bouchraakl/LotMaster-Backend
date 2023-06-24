@@ -15,6 +15,8 @@ import org.springframework.util.Assert;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /*
@@ -45,10 +47,27 @@ public class VeiculoService {
     public void validarCadastroVeiculo(Veiculo veiculo) {
 
         veiculo.setCadastro(LocalDateTime.now());
+
+        // Validate plate format
+        String brazilFormat = "^[A-Z]{3}-\\d{4}$"; // Format ABC-1234
+        String paraguayFormat = "^[A-Z]{3}\\s\\d{4}$"; // Format ABC 1234
+        String argentinaFormat = "^[A-Z]{3}\\s\\d{3}$"; // Format ABC 123
+
+        Pattern brazilPattern = Pattern.compile(brazilFormat);
+        Pattern paraguayPattern = Pattern.compile(paraguayFormat);
+        Pattern argentinaPattern = Pattern.compile(argentinaFormat);
+
+        Matcher brazilMatcher = brazilPattern.matcher(veiculo.getPlaca());
+        Matcher paraguayMatcher = paraguayPattern.matcher(veiculo.getPlaca());
+        Matcher argentinaMatcher = argentinaPattern.matcher(veiculo.getPlaca());
+
+        Assert.isTrue(brazilMatcher.matches() || paraguayMatcher.matches() || argentinaMatcher.matches(),
+                "The plate format " + veiculo.getPlaca() + " is invalid. The expected format is ABC-1234 for Brazil, ABC 1234 for Paraguay, or ABC 123 for Argentina.");
+
         final Veiculo veiculoByPlaca = this.veiculoRepository.findByPlaca(veiculo.getPlaca());
         Assert.isTrue(veiculoByPlaca == null,
-                "Já existe um veículo cadastrado com a placa " + veiculo.getPlaca() +
-                        ". Verifique se os dados estão corretos e tente novamente.");
+                "There is already a registered vehicle with the license plate " + veiculo.getPlaca() +
+                ". Please check if the data is correct and try again.");
         this.veiculoRepository.save(veiculo);
 
     }
@@ -70,9 +89,9 @@ public class VeiculoService {
             Veiculo veiculoAtual = veiculoAtualOptional.get();
             if (!veiculoAtual.getPlaca().equals(veiculo.getPlaca())) {
                 Optional<Veiculo> veiculoByPlacaa = Optional.ofNullable(veiculoRepository.findByPlaca(veiculo.getPlaca()));
-                Assert.isTrue(!veiculoByPlacaa.isPresent(), "Já existe um veículo cadastrado com a placa "
-                        + veiculo.getPlaca() +
-                        ". Verifique se os dados estão corretos e tente novamente.");
+                Assert.isTrue(!veiculoByPlacaa.isPresent(), "There is already a registered vehicle with the license plate " +
+                        veiculo.getPlaca() +
+                        ". Please check if the data is correct and try again.");
             }
         }
 
@@ -80,24 +99,24 @@ public class VeiculoService {
         veiculoRepository.save(veiculo);
     }
 
-            /**
-             * Valida se um Veiculo com o ID fornecido existe no banco de dados antes de permitir sua exclusão.
-             * A transação é somente para leitura e será revertida em caso de exceção.
-             *
-             * @param id o ID do Veiculo a ser excluído
-             * @throws IllegalArgumentException se o ID do Veiculo não existir no banco de dados
-             */
+    /**
+     * Valida se um Veiculo com o ID fornecido existe no banco de dados antes de permitir sua exclusão.
+     * A transação é somente para leitura e será revertida em caso de exceção.
+     *
+     * @param id o ID do Veiculo a ser excluído
+     * @throws IllegalArgumentException se o ID do Veiculo não existir no banco de dados
+     */
     @Transactional
-    public void validarDeleteVeiculo(Long id){
+    public void validarDeleteVeiculo(Long id) {
 
 
         final Veiculo veiculo = this.veiculoRepository.findById(id).orElse(null);
-        Assert.notNull(veiculo, "Veiculo não encontrado!");
+        Assert.notNull(veiculo, "Vehicle not registered !");
 
-        if(!this.movimentacaoRepository.findByVeiculoId(id).isEmpty()){
+        if (!this.movimentacaoRepository.findByVeiculoId(id).isEmpty()) {
             veiculo.setAtivo(false);
             this.veiculoRepository.save(veiculo);
-        }else{
+        } else {
             this.veiculoRepository.delete(veiculo);
         }
     }
@@ -105,12 +124,6 @@ public class VeiculoService {
     public Page<Veiculo> listAll(Pageable pageable) {
         return this.veiculoRepository.findAll(pageable);
     }
-
-
-
-
-
-
 
 
 }

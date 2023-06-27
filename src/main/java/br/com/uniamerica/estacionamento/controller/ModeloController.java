@@ -54,18 +54,6 @@ public class ModeloController {
         return ResponseEntity.ok(this.modeloRepository.findAll());
     }
 
-    @GetMapping("/nome")
-    public ResponseEntity<?> getByNome(@RequestParam("nome") String nome) {
-        final Modelo modelo = this.modeloRepository.findByNome(nome);
-
-        if (modelo == null || modelo.getNome() == null) {
-            return ResponseEntity.badRequest().body("nome inválido");
-        }
-
-        return ResponseEntity.ok(modelo);
-    }
-
-
     /**
      * Retrieves active Modelos.
      *
@@ -80,6 +68,12 @@ public class ModeloController {
             return ResponseEntity.ok(modeloList);
         }
     }
+
+    @GetMapping("/nome/{nome}")
+    public ResponseEntity<?> getByNomeMarca(@RequestParam("nome") String nome) {
+        return ResponseEntity.ok(this.modeloRepository.findByNomeMarca(nome));
+    }
+
 
     /**
      * Registers a new Modelo.

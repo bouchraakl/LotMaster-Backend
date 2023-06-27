@@ -24,6 +24,8 @@ public interface MarcaRepository extends JpaRepository<Marca, Long> {
     public Marca findByNome(@Param("nome") final String nome);
 
 
+
+
     /**
      * Retrieves the name of the brand with the specified ID.
      *

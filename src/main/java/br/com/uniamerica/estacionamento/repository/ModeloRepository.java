@@ -6,6 +6,7 @@ package br.com.uniamerica.estacionamento.repository;
 
 import br.com.uniamerica.estacionamento.entity.Marca;
 import br.com.uniamerica.estacionamento.entity.Modelo;
+import br.com.uniamerica.estacionamento.entity.Movimentacao;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -46,11 +47,13 @@ public interface ModeloRepository extends JpaRepository<Modelo, Long> {
     /**
      * Retrieves the name of the model with the specified ID.
      *
-     * @param id the ID of the model
+     * @param nome the ID of the model
      * @return the name of the model
      */
-    @Query("SELECT m.nome FROM Modelo m WHERE m.id = :id")
-    public String findByNomeID(@Param("id") final Long id);
+
+    @Query("SELECT m FROM Modelo m JOIN m.marca ma WHERE ma.nome = :nome")
+    Modelo findByNomeMarca(@Param("nome") final String nome);
+
 
     /**
      * Retrieves the active models with the specified ID.
@@ -60,4 +63,5 @@ public interface ModeloRepository extends JpaRepository<Modelo, Long> {
      */
     @Query("from Modelo where id = :id and ativo = true")
     public List<Modelo> findActiveElement(@Param("id") Long id);
+
 }

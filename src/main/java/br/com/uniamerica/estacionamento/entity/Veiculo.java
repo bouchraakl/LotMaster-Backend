@@ -16,6 +16,7 @@ import jakarta.validation.constraints.Pattern;
 
 import org.hibernate.envers.AuditTable;
 import org.hibernate.envers.Audited;
+import org.hibernate.validator.constraints.Range;
 
 @Getter
 @Setter
@@ -40,6 +41,7 @@ public class Veiculo extends AbstractEntity {
     private Modelo modelo;
 
     @Column(name = "ano", nullable = false)
+    @Range(min = 1990,max = 2025,message = "Fabric year of the vehicle should be between 1990-2025")
     @Getter
     @Setter
     private int ano;

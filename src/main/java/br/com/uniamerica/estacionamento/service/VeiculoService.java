@@ -68,6 +68,9 @@ public class VeiculoService {
         Assert.isTrue(veiculoByPlaca == null,
                 "There is already a registered vehicle with the license plate " + veiculo.getPlaca() +
                 ". Please check if the data is correct and try again.");
+
+        Assert.notNull(veiculo.getModelo().getId(), "It was not possible to save the vehicle because the associated model was not found.");
+
         this.veiculoRepository.save(veiculo);
 
     }

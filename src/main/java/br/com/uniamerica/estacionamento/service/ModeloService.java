@@ -45,11 +45,11 @@ public class ModeloService {
         final Modelo existingModel = this.modeloRepository.findByNome(modelo.getNome());
         Assert.isNull(existingModel, "A model is already registered with the provided name.");
 
-        // Verificar se o ID da marca foi informado e se ele existe no banco de dados
-        Assert.notNull(modelo.getMarca().getId(), "It was not possible to save the model because the associated brand was not found.");
-
-        Modelo modelo1 = this.modeloRepository.findByNomeMarca(modelo.getMarca().getNome());
-        Assert.isNull(modelo1,"It was not possible to save the model because the associated brand was not found.");
+//        // Verificar se o ID da marca foi informado e se ele existe no banco de dados
+//        Assert.notNull(modelo.getMarca().getId(), "It was not possible to save the model because the associated brand was not found.");
+//
+//        Modelo modelo1 = this.modeloRepository.findByNomeMarca(modelo.getMarca().getNome());
+//        Assert.isNull(modelo1,"It was not possible to save the model because the associated brand was not found.");
         modeloRepository.save(modelo);
     }
 
@@ -66,15 +66,12 @@ public class ModeloService {
         // Verificar se o nome do modelo já existe no banco de dados
         final Modelo existingModel = this.modeloRepository.findByNome(modelo.getNome());
         Assert.isNull(existingModel, "A model is already registered with the provided name.");
-
-
-        // Verificar se o ID da marca foi informado e se ele existe no banco de dados
-        Assert.notNull(modelo.getMarca().getId(), "It was not possible to save " +
-                "the model because the associated brand was not found.");
-
-        Modelo modelo1 = this.modeloRepository.findByNomeMarca(modelo.getMarca().getNome());
-        Assert.isNull(modelo1,"It was not possible to save the" +
-                " model because the associated brand was not found.");
+//
+//
+//
+//        Modelo modelo1 = this.modeloRepository.findByNomeMarca(modelo.getMarca().getNome());
+//        Assert.isNull(modelo1,"It was not possible to save the" +
+//                " model because the associated brand was not found.");
 
         modeloRepository.save(modelo);
     }

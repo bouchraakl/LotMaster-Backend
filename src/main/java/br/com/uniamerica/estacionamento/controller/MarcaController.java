@@ -54,15 +54,9 @@ public class MarcaController {
     }
 
 
-    @GetMapping("/nome")
-    public ResponseEntity<?> getByNome(@RequestParam("nome") String nome) {
-        final Marca marca = this.marcaRepository.findByNome(nome);
-
-        if (marca == null || marca.getNome() == null) {
-            return ResponseEntity.badRequest().body("nome inválido");
-        }
-
-        return ResponseEntity.ok(marca);
+    @GetMapping("/nome/{nome}")
+    public ResponseEntity<?> getByNome(@PathVariable("nome") String nome) {
+        return ResponseEntity.ok(this.marcaRepository.findByNome(nome));
     }
 
 

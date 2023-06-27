@@ -70,8 +70,8 @@ public class ModeloController {
     }
 
     @GetMapping("/nome/{nome}")
-    public ResponseEntity<?> getByNomeMarca(@RequestParam("nome") String nome) {
-        return ResponseEntity.ok(this.modeloRepository.findByNomeMarca(nome));
+    public ResponseEntity<?> getByNomeMarca(@PathVariable("nome") String nome) {
+        return ResponseEntity.ok(this.modeloRepository.findByNome(nome));
     }
 
 

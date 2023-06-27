@@ -59,7 +59,6 @@ public class Configuracao extends AbstractEntity {
     @Getter
     @Setter
     @Column(name = "gerar_desconto")
-    @NotNull(message = "The generate discount field cannot be null.")
     private Boolean gerarDesconto;
 
     @Getter

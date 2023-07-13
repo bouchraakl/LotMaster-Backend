@@ -1,0 +1,24 @@
+name: Deploy Backend
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Deploy to GitHub Pages
+        run: |
+          git clone https://github.com/bouchraakl/LotMaster.git frontend
+          cd frontend
+          npm install
+          npm run build
+          cd ..
+          cp -R frontend/build/* .
+          git add .
+          git config user.name "${GITHUB_ACTOR}"
+          git config user.email "${GITHUB_ACTOR}@users.noreply.github.com"
+          git commit -m "Deploy frontend to GitHub Pages"
+          git push origin main
